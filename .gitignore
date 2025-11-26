@@ -1,5 +1,7 @@
-.env
-
 node_modules/
-data/backups/
-package-lock.json
+data/
+.env
+*.db
+*.db-shm
+*.db-wal
+.DS_Store
