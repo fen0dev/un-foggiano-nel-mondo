@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - Un Foggiano nel Mondo</title>
+    <link rel="stylesheet" href="../../styles/style.css">
+    <link rel="stylesheet" href="../../styles/admin.css">
+</head>
+<body>
+    <!-- Login Screen -->
+    <div id="loginScreen" class="login-screen">
+        <div class="login-card">
+            <div class="login-header">
+                <h1>🏆 Un Foggiano nel Mondo</h1>
+                <p>Dashboard Amministratore</p>
+            </div>
+            <form id="loginForm" class="login-form">
+                <div class="form-group">
+                    <label for="adminKey">Chiave Admin</label>
+                    <input type="password" id="adminKey" placeholder="Inserisci la chiave..." required>
+                </div>
+                <button type="submit" class="btn-login">
+                    <span>Accedi</span>
+                    <span class="btn-icon">→</span>
+                </button>
+                <p id="loginError" class="login-error"></p>
+            </form>
+        </div>
+    </div>
+
+    <!-- Dashboard -->
+    <div id="dashboard" class="dashboard" style="display: none;">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <h2>🏆 Admin</h2>
+                <span class="version">v1.0</span>
+            </div>
+            <nav class="sidebar-nav">
+                <a href="#" class="nav-item active" data-section="overview">
+                    <span class="nav-icon">📊</span>
+                    <span>Panoramica</span>
+                </a>
+                <a href="#" class="nav-item" data-section="iscrizioni">
+                    <span class="nav-icon">📋</span>
+                    <span>Iscrizioni</span>
+                </a>
+                <a href="#" class="nav-item" data-section="analytics">
+                    <span class="nav-icon">📈</span>
+                    <span>Analytics</span>
+                </a>
+                <a href="#" class="nav-item" data-section="logs">
+                    <span class="nav-icon">📝</span>
+                    <span>Log Attività</span>
+                </a>
+            </nav>
+            <div class="sidebar-footer">
+                <button id="logoutBtn" class="btn-logout">
+                    <span>🚪</span>
+                    <span>Esci</span>
+                </button>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Header -->
+            <header class="main-header">
+                <div class="header-title">
+                    <h1 id="pageTitle">Panoramica</h1>
+                    <p id="lastUpdate">Ultimo aggiornamento: --</p>
+                </div>
+                <div class="header-actions">
+                    <button id="refreshBtn" class="btn-refresh" title="Aggiorna">
+                        <span>🔄</span>
+                    </button>
+                    <button id="exportBtn" class="btn-export">
+                        <span>📥</span>
+                        <span>Esporta CSV</span>
+                    </button>
+                </div>
+            </header>
+
+            <!-- Overview Section -->
+            <section id="overviewSection" class="section active">
+                <!-- Stats Cards -->
+                <div class="stats-grid">
+                    <div class="stat-card" data-type="total">
+                        <div class="stat-icon">🏟️</div>
+                        <div class="stat-info">
+                            <span class="stat-value" id="statTotal">--</span>
+                            <span class="stat-label">Iscrizioni Totali</span>
+                        </div>
+                    </div>
+                    <div class="stat-card" data-type="approved">
+                        <div class="stat-icon">✅</div>
+                        <div class="stat-info">
+                            <span class="stat-value" id="statApproved">--</span>
+                            <span class="stat-label">Approvate</span>
+                        </div>
+                    </div>
+                    <div class="stat-card" data-type="pending">
+                        <div class="stat-icon">⏳</div>
+                        <div class="stat-info">
+                            <span class="stat-value" id="statPending">--</span>
+                            <span class="stat-label">In Attesa</span>
+                        </div>
+                    </div>
+                    <div class="stat-card" data-type="rejected">
+                        <div class="stat-icon">❌</div>
+                        <div class="stat-info">
+                            <span class="stat-value" id="statRejected">--</span>
+                            <span class="stat-label">Rifiutate</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Charts Row -->
+                <div class="charts-row">
+                    <div class="chart-card">
+                        <h3>Iscrizioni per Paese</h3>
+                        <div id="countryChart" class="chart-container">
+                            <div class="chart-bars" id="countryBars"></div>
+                        </div>
+                    </div>
+                    <div class="chart-card">
+                        <h3>Statistiche Puzzle</h3>
+                        <div class="puzzle-stats">
+                            <div class="puzzle-stat">
+                                <span class="puzzle-value" id="puzzleStarted">--</span>
+                                <span class="puzzle-label">Iniziati</span>
+                            </div>
+                            <div class="puzzle-stat">
+                                <span class="puzzle-value" id="puzzleCompleted">--</span>
+                                <span class="puzzle-label">Completati</span>
+                            </div>
+                            <div class="puzzle-stat">
+                                <span class="puzzle-value" id="puzzleRate">--%</span>
+                                <span class="puzzle-label">Tasso Completamento</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Recent Iscrizioni -->
+                <div class="recent-card">
+                    <div class="card-header">
+                        <h3>Iscrizioni Recenti</h3>
+                        <a href="#" class="view-all" data-section="iscrizioni">Vedi tutte →</a>
+                    </div>
+                    <div class="table-container">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Squadra</th>
+                                    <th>Capitano</th>
+                                    <th>Paese</th>
+                                    <th>Data</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody id="recentTable">
+                                <tr>
+                                    <td colspan="5" class="loading">Caricamento...</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Iscrizioni Section -->
+            <section id="iscrizioniSection" class="section">
+                <!-- Filters -->
+                <div class="filters-bar">
+                    <div class="search-box">
+                        <span class="search-icon">🔍</span>
+                        <input type="text" id="searchInput" placeholder="Cerca squadra, capitano, email...">
+                    </div>
+                    <div class="filter-group">
+                        <select id="statusFilter">
+                            <option value="">Tutti gli status</option>
+                            <option value="pending">⏳ In Attesa</option>
+                            <option value="approved">✅ Approvate</option>
+                            <option value="rejected">❌ Rifiutate</option>
+                        </select>
+                        <select id="countryFilter">
+                            <option value="">Tutti i paesi</option>
+                            <option value="IT">🇮🇹 Italia</option>
+                            <option value="US">🇺🇸 Stati Uniti</option>
+                            <option value="GB">🇬🇧 Regno Unito</option>
+                            <option value="DE">🇩🇪 Germania</option>
+                            <option value="FR">🇫🇷 Francia</option>
+                            <option value="ES">🇪🇸 Spagna</option>
+                            <option value="BR">🇧🇷 Brasile</option>
+                            <option value="AR">🇦🇷 Argentina</option>
+                            <option value="AU">🇦🇺 Australia</option>
+                            <option value="OTHER">🌍 Altro</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Bulk Actions -->
+                <div id="bulkActions" class="bulk-actions" style="display: none;">
+                    <span id="selectedCount">0 selezionati</span>
+                    <button class="btn-bulk approve" id="bulkApprove">✅ Approva</button>
+                    <button class="btn-bulk reject" id="bulkReject">❌ Rifiuta</button>
+                    <button class="btn-bulk delete" id="bulkDelete">🗑️ Elimina</button>
+                </div>
+
+                <!-- Table -->
+                <div class="table-container full">
+                    <table class="data-table selectable">
+                        <thead>
+                            <tr>
+                                <th class="checkbox-col">
+                                    <input type="checkbox" id="selectAll">
+                                </th>
+                                <th>Squadra</th>
+                                <th>Capitano</th>
+                                <th>Email</th>
+                                <th>Telefono</th>
+                                <th>Paese</th>
+                                <th>Giocatori</th>
+                                <th>Data</th>
+                                <th>Status</th>
+                                <th>Azioni</th>
+                            </tr>
+                        </thead>
+                        <tbody id="iscrizioniTable">
+                            <tr>
+                                <td colspan="10" class="loading">Caricamento...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Pagination -->
+                <div class="pagination">
+                    <button id="prevPage" class="btn-page" disabled>← Precedente</button>
+                    <span id="pageInfo">Pagina 1 di 1</span>
+                    <button id="nextPage" class="btn-page" disabled>Successiva →</button>
+                </div>
+            </section>
+
+            <!-- Analytics Section -->
+            <section id="analyticsSection" class="section">
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-icon">👁️</div>
+                        <div class="stat-info">
+                            <span class="stat-value" id="totalPageviews">--</span>
+                            <span class="stat-label">Visualizzazioni</span>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">👥</div>
+                        <div class="stat-info">
+                            <span class="stat-value" id="uniqueVisitors">--</span>
+                            <span class="stat-label">Visitatori Unici</span>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">📝</div>
+                        <div class="stat-info">
+                            <span class="stat-value" id="formStarted">--</span>
+                            <span class="stat-label">Form Iniziati</span>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">✉️</div>
+                        <div class="stat-info">
+                            <span class="stat-value" id="formSubmitted">--</span>
+                            <span class="stat-label">Form Inviati</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="charts-row">
+                    <div class="chart-card wide">
+                        <h3>Andamento Giornaliero</h3>
+                        <div id="dailyChart" class="daily-chart">
+                            <div class="chart-lines" id="dailyLines"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="charts-row">
+                    <div class="chart-card">
+                        <h3>Errori Form più Comuni</h3>
+                        <div id="formErrors" class="error-list"></div>
+                    </div>
+                    <div class="chart-card">
+                        <h3>Eventi Recenti</h3>
+                        <div id="recentEvents" class="events-list"></div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Logs Section -->
+            <section id="logsSection" class="section">
+                <div class="table-container full">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Data/Ora</th>
+                                <th>Azione</th>
+                                <th>Entità</th>
+                                <th>Dettagli</th>
+                                <th>IP</th>
+                            </tr>
+                        </thead>
+                        <tbody id="logsTable">
+                            <tr>
+                                <td colspan="5" class="loading">Caricamento...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Modal Dettagli Iscrizione -->
+    <div id="detailModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="modalTitle">Dettagli Iscrizione</h2>
+                <button class="modal-close" id="closeModal">×</button>
+            </div>
+            <div class="modal-body" id="modalBody">
+                <!-- Contenuto dinamico -->
+            </div>
+            <div class="modal-footer">
+                <button class="btn-modal approve" id="modalApprove">✅ Approva</button>
+                <button class="btn-modal reject" id="modalReject">❌ Rifiuta</button>
+                <button class="btn-modal delete" id="modalDelete">🗑️ Elimina</button>
+                <button class="btn-modal close" id="modalCancel">Chiudi</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Notifications -->
+    <div id="toastContainer" class="toast-container"></div>
+
+    <script src="../js/admin/dashboard.js"></script>
+</body>
+</html>
+

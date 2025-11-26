@@ -1,0 +1,494 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Un Foggiano Nel Mondo - Torneo di Calcio Over 55. Un'iniziativa che unisce Foggia al mondo attraverso il calcio.">
+    <meta name="theme-color" content="#1e3a5f">
+    <title>Un Foggiano Nel Mondo | Torneo Calcio Over 55</title>
+    
+    <!-- Google Fonts - Font classici e leggibili -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Merriweather:wght@400;700;900&family=Source+Sans+3:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <link rel="stylesheet" href="../styles/style.css">
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="container">
+            <a href="#home" class="logo">
+                <span class="logo-text">Un Foggiano nel Mondo</span>
+            </a>
+            
+            <!-- Menu Mobile -->
+            <button class="nav-toggle" id="navToggle" aria-label="Menu di navigazione">
+                <span class="hamburger"></span>
+            </button>
+            
+            <nav class="nav" id="mainNav">
+                <a href="#home">Home</a>
+                <a href="#countdown">Countdown</a>
+                <a href="#puzzle">La Provincia</a>
+                <a href="#galleria">Galleria</a>
+                <a href="#torneo">Il Torneo</a>
+                <a href="#contatti" class="nav-cta">Iscriviti Ora</a>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Hero Section -->
+    <section class="hero" id="home">
+        <div class="hero-overlay"></div>
+        <div class="hero-content fade-in">
+            <p class="hero-eyebrow">Prima Edizione Internazionale</p>
+            <h1 class="hero-title">Un Foggiano nel Mondo</h1>
+            <h2 class="hero-subtitle">Torneo di Calcio Over 55</h2>
+            <p class="hero-description">
+                Un'iniziativa che parte dal cuore della Puglia. Un torneo internazionale 
+                aperto a squadre da tutto il mondo, con almeno un partecipante 
+                originario della provincia di Foggia.
+            </p>
+            <div class="hero-info">
+                <div class="hero-info-item">
+                    <span class="info-label">Data</span>
+                    <span class="info-value">1 Giugno 2026</span>
+                </div>
+                <div class="hero-info-divider"></div>
+                <div class="hero-info-item">
+                    <span class="info-label">Luogo</span>
+                    <span class="info-value">Foggia, Italia</span>
+                </div>
+                <div class="hero-info-divider"></div>
+                <div class="hero-info-item">
+                    <span class="info-label">Categoria</span>
+                    <span class="info-value">Over 55</span>
+                </div>
+            </div>
+            <div class="hero-actions">
+                <a href="#contatti" class="btn-primary">Iscriviti al Torneo</a>
+                <a href="#torneo" class="btn-secondary">Scopri di più</a>
+            </div>
+        </div>
+        <div class="scroll-indicator">
+            <span>Scorri per continuare</span>
+            <div class="scroll-arrow"></div>
+        </div>
+    </section>
+
+    <!-- Countdown Section -->
+    <section class="countdown-section" id="countdown">
+        <div class="container">
+            <div class="countdown-header fade-in">
+                <h2 class="section-title">Il Grande Giorno Si Avvicina</h2>
+                <p class="countdown-subtitle">1 Giugno 2026 - Foggia, Puglia</p>
+            </div>
+            
+            <div class="countdown-container fade-in">
+                <div class="countdown-item">
+                    <div class="flip-card">
+                        <div class="flip-card-inner">
+                            <span id="countdown-days" class="countdown-number">000</span>
+                        </div>
+                        <div class="flip-card-shine"></div>
+                    </div>
+                    <span class="countdown-label">Giorni</span>
+                </div>
+                
+                <div class="countdown-separator">:</div>
+                
+                <div class="countdown-item">
+                    <div class="flip-card">
+                        <div class="flip-card-inner">
+                            <span id="countdown-hours" class="countdown-number">00</span>
+                        </div>
+                        <div class="flip-card-shine"></div>
+                    </div>
+                    <span class="countdown-label">Ore</span>
+                </div>
+                
+                <div class="countdown-separator">:</div>
+                
+                <div class="countdown-item">
+                    <div class="flip-card">
+                        <div class="flip-card-inner">
+                            <span id="countdown-minutes" class="countdown-number">00</span>
+                        </div>
+                        <div class="flip-card-shine"></div>
+                    </div>
+                    <span class="countdown-label">Minuti</span>
+                </div>
+                
+                <div class="countdown-separator">:</div>
+                
+                <div class="countdown-item">
+                    <div class="flip-card">
+                        <div class="flip-card-inner">
+                            <span id="countdown-seconds" class="countdown-number">00</span>
+                        </div>
+                        <div class="flip-card-shine"></div>
+                    </div>
+                    <span class="countdown-label">Secondi</span>
+                </div>
+            </div>
+            
+            <div class="countdown-cta fade-in">
+                <a href="#contatti" class="btn-primary">Iscriviti al Torneo</a>
+                <p class="countdown-note">Le iscrizioni sono aperte. Posti limitati.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- puzzle section -->
+    <section class="puzzle-section" id="puzzle">
+        <div class="container">
+            <h2 class="section-title slide-in">Scopri la Provincia di Foggia</h2>
+            <p class="section-subtitle fade-in">Clicca sui pezzi per conoscere gli organizzatori e ricomporre la mappa</p>
+
+            <div class="puzzle-container">
+                <div class="puzzle-grid" id="puzzleGrid">
+                    <!-- i pezzi verranno generati dal JavaScript -->
+                </div>
+            </div>
+
+            <div class="puzzle-message" id="puzzleMessage" style="display: none;">
+                <h3>Complimenti!</h3>
+                <p>Hai completato il puzzle della Provincia di Foggia!</p>
+                <p class="message-detail">Il messaggio personalizzato sarà qui.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Torneo Info Section -->
+    <section class="torneo-section" id="torneo">
+        <div class="container">
+            <div class="section-header">
+                <h2 class="section-title slide-in">Il Torneo</h2>
+                <p class="section-intro fade-in">Un evento che celebra la passione per il calcio e le radici foggiane nel mondo</p>
+            </div>
+
+            <div class="info-grid">
+                <div class="info-card fade-in">
+                    <div class="info-number">01</div>
+                    <h3>Data dell'Evento</h3>
+                    <p>1 Giugno 2026</p>
+                    <span class="info-detail">Una giornata dedicata allo sport e all'amicizia</span>
+                </div>
+
+                <div class="info-card fade-in">
+                    <div class="info-number">02</div>
+                    <h3>Sede del Torneo</h3>
+                    <p>Foggia, Puglia</p>
+                    <span class="info-detail">Nel cuore della Capitanata</span>
+                </div>
+
+                <div class="info-card fade-in">
+                    <div class="info-number">03</div>
+                    <h3>Categoria</h3>
+                    <p>Over 55</p>
+                    <span class="info-detail">Per chi ha ancora voglia di giocare</span>
+                </div>
+
+                <div class="info-card fade-in">
+                    <div class="info-number">04</div>
+                    <h3>Partecipazione</h3>
+                    <p>Internazionale</p>
+                    <span class="info-detail">Squadre da tutto il mondo</span>
+                </div>
+            </div>
+
+            <div class="regole-section fade-in">
+                <h3>Regolamento</h3>
+                <div class="regole-grid">
+                    <div class="regola-item">
+                        <span class="regola-check"></span>
+                        <span>Età minima dei partecipanti: 55 anni</span>
+                    </div>
+                    <div class="regola-item">
+                        <span class="regola-check"></span>
+                        <span>Almeno un giocatore per squadra deve essere originario della provincia di Foggia</span>
+                    </div>
+                    <div class="regola-item">
+                        <span class="regola-check"></span>
+                        <span>Partecipazione aperta a squadre provenienti da tutto il mondo</span>
+                    </div>
+                    <div class="regola-item">
+                        <span class="regola-check"></span>
+                        <span>Il regolamento completo sarà comunicato agli iscritti</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Galleria Section -->
+    <section class="galleria-section" id="galleria">
+        <div class="container">
+            <div class="section-header">
+                <h2 class="section-title slide-in">Galleria</h2>
+                <p class="section-intro fade-in">Momenti e ricordi delle edizioni passate</p>
+            </div>
+            
+            <!-- Griglia Galleria -->
+            <div class="galleria-grid fade-in">
+                <div class="galleria-item large">
+                    <div class="galleria-placeholder">
+                        <span class="placeholder-text">Foto in arrivo</span>
+                    </div>
+                </div>
+                <div class="galleria-item">
+                    <div class="galleria-placeholder">
+                        <span class="placeholder-text">Foto in arrivo</span>
+                    </div>
+                </div>
+                <div class="galleria-item">
+                    <div class="galleria-placeholder">
+                        <span class="placeholder-text">Foto in arrivo</span>
+                    </div>
+                </div>
+                <div class="galleria-item">
+                    <div class="galleria-placeholder">
+                        <span class="placeholder-text">Foto in arrivo</span>
+                    </div>
+                </div>
+                <div class="galleria-item tall">
+                    <div class="galleria-placeholder">
+                        <span class="placeholder-text">Foto in arrivo</span>
+                    </div>
+                </div>
+                <div class="galleria-item">
+                    <div class="galleria-placeholder">
+                        <span class="placeholder-text">Foto in arrivo</span>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Messaggio -->
+            <div class="galleria-notice fade-in">
+                <p>La galleria fotografica sarà disponibile dopo la prima edizione del torneo.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- contatti section -->
+    <section class="contatti-section" id="contatti">
+        <div class="container">
+            <h2 class="section-title slide-in">Iscrizioni e Contatti</h2>
+            
+            <!-- Form di Iscrizione -->
+            <div class="form-container fade-in">
+                <h3 class="form-title">Iscriviti al Torneo</h3>
+                <form id="iscrizioneForm" class="iscrizione-form" novalidate>
+                    <!-- CSRF Token (verrà generato dal backend) -->
+                    <input type="hidden" id="csrfToken" name="csrfToken">
+                    
+                    <!-- Informazioni Squadra -->
+                    <div class="form-section">
+                        <h4 class="section-header">Informazioni Squadra</h4>
+                        
+                        <div class="form-group">
+                            <label for="nomeSquadra">Nome Squadra *</label>
+                            <input type="text" id="nomeSquadra" name="nomeSquadra" required 
+                                   minlength="3" maxlength="50" 
+                                   pattern="[A-Za-z0-9\s\-_]+"
+                                   placeholder="Es: Foggia United">
+                            <span class="error-message"></span>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="cittaSquadra">Città di Provenienza *</label>
+                            <input type="text" id="cittaSquadra" name="cittaSquadra" required 
+                                   minlength="2" maxlength="50"
+                                   placeholder="Es: Foggia">
+                            <span class="error-message"></span>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="paeseSquadra">Paese *</label>
+                            <select id="paeseSquadra" name="paeseSquadra" required>
+                                <option value="">Seleziona un paese</option>
+                                <option value="IT">Italia</option>
+                                <option value="US">Stati Uniti</option>
+                                <option value="GB">Regno Unito</option>
+                                <option value="DE">Germania</option>
+                                <option value="FR">Francia</option>
+                                <option value="ES">Spagna</option>
+                                <option value="BR">Brasile</option>
+                                <option value="AR">Argentina</option>
+                                <option value="AU">Australia</option>
+                                <option value="OTHER">Altro</option>
+                            </select>
+                            <span class="error-message"></span>
+                        </div>
+                    </div>
+                    
+                    <!-- Capitano Squadra -->
+                    <div class="form-section">
+                        <h4 class="section-header">Capitano Squadra</h4>
+                        
+                        <div class="form-group">
+                            <label for="nomeCapitano">Nome *</label>
+                            <input type="text" id="nomeCapitano" name="nomeCapitano" required 
+                                   minlength="2" maxlength="30"
+                                   pattern="[A-Za-zÀ-ÿ\s]+"
+                                   placeholder="Nome">
+                            <span class="error-message"></span>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="cognomeCapitano">Cognome *</label>
+                            <input type="text" id="cognomeCapitano" name="cognomeCapitano" required 
+                                   minlength="2" maxlength="30"
+                                   pattern="[A-Za-zÀ-ÿ\s]+"
+                                   placeholder="Cognome">
+                            <span class="error-message"></span>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="emailCapitano">Email *</label>
+                            <input type="email" id="emailCapitano" name="emailCapitano" required 
+                                   maxlength="100"
+                                   placeholder="esempio@email.com">
+                            <span class="error-message"></span>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="telefonoCapitano">Telefono *</label>
+                            <input type="tel" id="telefonoCapitano" name="telefonoCapitano" required 
+                                   pattern="[\d\s\+\-\(\)]+"
+                                   minlength="10" maxlength="20"
+                                   placeholder="+39 333 1234567">
+                            <span class="error-message"></span>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="dataNascitaCapitano">Data di Nascita *</label>
+                            <input type="date" id="dataNascitaCapitano" name="dataNascitaCapitano" required>
+                            <span class="error-message"></span>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="provinciaFoggia">Provincia di Foggia *</label>
+                            <select id="provinciaFoggia" name="provinciaFoggia" required>
+                                <option value="">Seleziona</option>
+                                <option value="si">Sì, sono della provincia di Foggia</option>
+                                <option value="no">No, ma ho almeno un giocatore della provincia di Foggia</option>
+                            </select>
+                            <span class="error-message"></span>
+                        </div>
+                    </div>
+                    
+                    <!-- Partecipanti -->
+                    <div class="form-section">
+                        <h4 class="section-header">Numero Partecipanti</h4>
+                        
+                        <div class="form-group">
+                            <label for="numeroGiocatori">Numero Giocatori (min 11, max 25) *</label>
+                            <input type="number" id="numeroGiocatori" name="numeroGiocatori" required 
+                                   min="11" max="25" value="11">
+                            <span class="error-message"></span>
+                        </div>
+                    </div>
+                    
+                    <!-- Note -->
+                    <div class="form-section">
+                        <div class="form-group">
+                            <label for="note">Note Aggiuntive</label>
+                            <textarea id="note" name="note" rows="4" maxlength="500" 
+                                      placeholder="Informazioni aggiuntive sulla squadra..."></textarea>
+                            <span class="char-count"><span id="charCount">0</span>/500</span>
+                        </div>
+                    </div>
+                    
+                    <!-- Privacy e Consensi -->
+                    <div class="form-section">
+                        <div class="form-group checkbox-group">
+                            <label class="checkbox-label">
+                                <input type="checkbox" id="privacy" name="privacy" required>
+                                <span>Accetto la <a href="#" target="_blank">Privacy Policy</a> *</span>
+                            </label>
+                            <span class="error-message"></span>
+                        </div>
+                        
+                        <div class="form-group checkbox-group">
+                            <label class="checkbox-label">
+                                <input type="checkbox" id="regolamento" name="regolamento" required>
+                                <span>Ho letto e accetto il <a href="#" target="_blank">Regolamento del Torneo</a> *</span>
+                            </label>
+                            <span class="error-message"></span>
+                        </div>
+                    </div>
+                    
+                    <!-- reCAPTCHA -->
+                    <div class="form-group">
+                        <div id="recaptcha-container"></div>
+                        <span class="error-message" id="recaptcha-error"></span>
+                    </div>
+                    
+                    <!-- Submit Button -->
+                    <div class="form-actions">
+                        <button type="submit" id="submitBtn" class="submit-btn">
+                            <span class="btn-text">Invia Iscrizione</span>
+                            <span class="btn-loader" style="display: none;">⏳</span>
+                        </button>
+                    </div>
+                    
+                    <!-- Messaggio di successo/errore -->
+                    <div id="formMessage" class="form-message" style="display: none;"></div>
+                </form>
+            </div>
+            
+            <!-- Informazioni Contatto -->
+            <div class="contatti-info fade-in">
+                <h3>Contatti</h3>
+                <p>Per maggiori informazioni:</p>
+                <div class="contatti-list">
+                    <div class="contatto-item">
+                        <span class="contatto-label">Email</span>
+                        <a href="mailto:info@foggianonelmondo.it">info@foggianonelmondo.it</a>
+                    </div>
+                    <div class="contatto-item">
+                        <span class="contatto-label">Telefono</span>
+                        <a href="tel:+393331234567">+39 333 1234567</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-brand">
+                    <h3>Un Foggiano nel Mondo</h3>
+                    <p>Torneo Internazionale di Calcio Over 55</p>
+                </div>
+                <div class="footer-links">
+                    <h4>Link Utili</h4>
+                    <a href="#torneo">Il Torneo</a>
+                    <a href="#contatti">Iscrizioni</a>
+                    <a href="#">Privacy Policy</a>
+                    <a href="#">Regolamento</a>
+                </div>
+                <div class="footer-contact">
+                    <h4>Contatti</h4>
+                    <p>info@foggianonelmondo.it</p>
+                    <p>+39 333 1234567</p>
+                    <p>Foggia, Italia</p>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2025 Un Foggiano nel Mondo. Tutti i diritti riservati.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="../js/index.js" defer></script>
+    <script src="../js/iscrizioni/form.js" defer></script>
+    <script src="../js/analytics/analytics.js" async defer></script>
+    <!-- reCAPTCHA -->
+    <script src="https://www.google.com/recaptcha/api.js" async defer></script>
+</body>
+</html>
