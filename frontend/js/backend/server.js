@@ -10,6 +10,9 @@ const crypto = require('crypto');
 const path = require('path');
 const fs = require('fs');
 const cron = require('node-cron');
+require('dotenv').config();
+const { getEmailService } = require('./email');
+const emailService = getEmailService();
 
 // Database
 const { getDatabase } = require('./database');
@@ -438,7 +441,7 @@ const validationRules = [
 ];
 
 // ==========================================
-// ENDPOINT: ISCRIZIONE (Database)
+// ENDPOINT: ISCRIZIONE (Database + Email)
 // ==========================================
 app.post('/api/iscrizione',
     formLimiter,
@@ -509,6 +512,24 @@ app.post('/api/iscrizione',
             }
 
             console.log(`✅ Nuova iscrizione: ${result.iscrizione.nome_squadra} - ${result.iscrizione.email_capitano}`);
+
+            // Invia email di conferma all'utente
+            emailService.sendConfirmation(result.iscrizione)
+                .then(emailResult => {
+                    if (emailResult.success) {
+                        console.log(`📧 Email conferma inviata a ${result.iscrizione.email_capitano}`);
+                    }
+                })
+                .catch(err => console.error('Errore invio email conferma:', err));
+
+            // notifica admin
+            emailService.notifyAdmin(result.iscrizione)
+                .then(emailResult => {
+                    if (emailResult.success) {
+                        console.log(`📧 Notifica admin inviata per: ${result.iscrizione.nome_squadra}`);
+                    }
+                })
+                .catch(err => console.error('Errore invio notifica admin:', err));
 
             // Log admin
             db.logAdminAction({
@@ -583,7 +604,7 @@ app.get('/api/iscrizioni', (req, res) => {
     });
 });
 
-// Aggiorna status iscrizione
+// Aggiorna status iscrizione + email
 app.patch('/api/iscrizioni/:id', (req, res) => {
     const adminKey = req.query.key;
     
@@ -606,6 +627,17 @@ app.patch('/api/iscrizioni/:id', (req, res) => {
     const updated = db.updateIscrizioneStatus(id, status, adminKey);
     
     if (updated) {
+        // Invia email di notifica cambio status
+        if (status === 'approved' || status === 'rejected') {
+            emailService.sendStatusUpdate(oldIscrizione, status)
+                .then(emailResult => {
+                    if (emailResult.success) {
+                        console.log(`📧 Email status update inviata a ${oldIscrizione.email_capitano}`);
+                    }
+                })
+                .catch(err => console.error('Errore invio email status:', err));
+        }
+
         db.logAdminAction({
             action: 'iscrizione_status_changed',
             entityType: 'iscrizione',

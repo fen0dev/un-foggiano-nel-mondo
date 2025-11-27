@@ -38,11 +38,20 @@
         </div>
     </header>
 
-    <!-- Hero Section -->
+    <!-- Hero Section - GitHub Style -->
     <section class="hero" id="home">
-        <div class="hero-overlay"></div>
+        <!-- Decorative Elements -->
+        <div class="hero-glow hero-glow-left"></div>
+        <div class="hero-glow hero-glow-right"></div>
+        <div class="hero-gradient-orb hero-orb-1"></div>
+        <div class="hero-gradient-orb hero-orb-2"></div>
+        
         <div class="hero-content fade-in">
-            <p class="hero-eyebrow">Prima Edizione Internazionale</p>
+            <div class="hero-badge">
+                <span class="badge-icon">⚽</span>
+                <span>Seconda Edizione Internazionale • 1 Giugno 2026</span>
+            </div>
+            
             <h1 class="hero-title">Un Foggiano nel Mondo</h1>
             <h2 class="hero-subtitle">Torneo di Calcio Over 55</h2>
             <p class="hero-description">
@@ -50,27 +59,49 @@
                 aperto a squadre da tutto il mondo, con almeno un partecipante 
                 originario della provincia di Foggia.
             </p>
-            <div class="hero-info">
-                <div class="hero-info-item">
-                    <span class="info-label">Data</span>
-                    <span class="info-value">1 Giugno 2026</span>
-                </div>
-                <div class="hero-info-divider"></div>
-                <div class="hero-info-item">
-                    <span class="info-label">Luogo</span>
-                    <span class="info-value">Foggia, Italia</span>
-                </div>
-                <div class="hero-info-divider"></div>
-                <div class="hero-info-item">
-                    <span class="info-label">Categoria</span>
-                    <span class="info-value">Over 55</span>
-                </div>
-            </div>
+            
             <div class="hero-actions">
-                <a href="#contatti" class="btn-primary">Iscriviti al Torneo</a>
+                <a href="#contatti" class="btn-primary">
+                    Iscriviti al Torneo
+                    <span class="btn-arrow">→</span>
+                </a>
                 <a href="#torneo" class="btn-secondary">Scopri di più</a>
             </div>
         </div>
+        
+        <!-- Stadium Image Showcase - GitHub Style -->
+        <div class="hero-showcase fade-in">
+            <div class="showcase-container">
+                <div class="showcase-glow"></div>
+                <div class="showcase-frame">
+                    <div class="showcase-header">
+                        <div class="showcase-dots">
+                            <span></span><span></span><span></span>
+                        </div>
+                        <span class="showcase-title">Stadio Pino Zaccheria • Foggia</span>
+                    </div>
+                    <div class="showcase-image" id="stadiumShowcase">
+                        <!-- immagine dello stadio -->
+                        <img src="/assets/pino-zaccheria.webp" alt="Stadio Pino Zaccheria di Foggia" id="stadiumImage" onload="this.classList.add('loaded')" onerror="this.classList.add('error')">
+                    </div>
+                </div>
+                
+                <!-- Info Cards floating around the stadium -->
+                <div class="showcase-info-card card-left">
+                    <span class="info-card-label">Data</span>
+                    <span class="info-card-value">1 Giugno 2026</span>
+                </div>
+                <div class="showcase-info-card card-right">
+                    <span class="info-card-label">Categoria</span>
+                    <span class="info-card-value">Over 55</span>
+                </div>
+                <div class="showcase-info-card card-bottom">
+                    <span class="info-card-label">Luogo</span>
+                    <span class="info-card-value">Foggia, Italia</span>
+                </div>
+            </div>
+        </div>
+        
         <div class="scroll-indicator">
             <span>Scorri per continuare</span>
             <div class="scroll-arrow"></div>
