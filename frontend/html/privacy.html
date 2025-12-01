@@ -1,0 +1,680 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Privacy Policy - Un Foggiano Nel Mondo - Torneo di Calcio Over 55">
+    <meta name="theme-color" content="#1e3a5f">
+    <title>Privacy Policy | Un Foggiano Nel Mondo</title>
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Merriweather:wght@400;700;900&family=Source+Sans+3:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <link rel="stylesheet" href="../styles/style.css">
+    <style>
+        .legal-page {
+            padding: 8rem 2rem 4rem;
+            min-height: 100vh;
+            background: var(--bg-dark);
+        }
+
+        .legal-container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .legal-header {
+            text-align: center;
+            margin-bottom: 3rem;
+            animation: fadeInDown 0.6s ease-out;
+        }
+
+        .legal-header h1 {
+            font-family: 'Merriweather', Georgia, serif;
+            font-size: 2.5rem;
+            color: var(--white);
+            margin-bottom: 1rem;
+        }
+
+        .legal-header .last-updated {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+        }
+
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: var(--primary);
+            text-decoration: none;
+            margin-bottom: 2rem;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+        .back-link:hover {
+            color: var(--primary-light);
+            transform: translateX(-5px);
+        }
+
+        /* Accordion Styles */
+        .accordion-container {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .accordion-item {
+            background: var(--bg-dark-light);
+            border-radius: 12px;
+            border: 1px solid var(--gray-300);
+            overflow: hidden;
+            opacity: 0;
+            transform: translateY(20px);
+            animation: fadeInUp 0.5s ease-out forwards;
+        }
+
+        .accordion-item:nth-child(1) { animation-delay: 0.1s; }
+        .accordion-item:nth-child(2) { animation-delay: 0.15s; }
+        .accordion-item:nth-child(3) { animation-delay: 0.2s; }
+        .accordion-item:nth-child(4) { animation-delay: 0.25s; }
+        .accordion-item:nth-child(5) { animation-delay: 0.3s; }
+        .accordion-item:nth-child(6) { animation-delay: 0.35s; }
+        .accordion-item:nth-child(7) { animation-delay: 0.4s; }
+        .accordion-item:nth-child(8) { animation-delay: 0.45s; }
+        .accordion-item:nth-child(9) { animation-delay: 0.5s; }
+        .accordion-item:nth-child(10) { animation-delay: 0.55s; }
+        .accordion-item:nth-child(11) { animation-delay: 0.6s; }
+
+        .accordion-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1.25rem 1.5rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            user-select: none;
+        }
+
+        .accordion-header:hover {
+            background: rgba(196, 30, 58, 0.1);
+        }
+
+        .accordion-item.active .accordion-header {
+            background: rgba(196, 30, 58, 0.15);
+            border-bottom: 1px solid var(--gray-300);
+        }
+
+        .accordion-title {
+            font-family: 'Merriweather', Georgia, serif;
+            font-size: 1.1rem;
+            color: var(--white);
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .accordion-number {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 28px;
+            height: 28px;
+            background: var(--primary);
+            color: var(--white);
+            border-radius: 50%;
+            font-size: 0.8rem;
+            font-weight: 700;
+        }
+
+        .accordion-icon {
+            width: 24px;
+            height: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            color: var(--primary);
+        }
+
+        .accordion-icon svg {
+            width: 20px;
+            height: 20px;
+        }
+
+        .accordion-item.active .accordion-icon {
+            transform: rotate(180deg);
+        }
+
+        .accordion-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .accordion-item.active .accordion-content {
+            max-height: 1000px;
+        }
+
+        .accordion-body {
+            padding: 1.5rem;
+            color: var(--text-secondary);
+            line-height: 1.8;
+        }
+
+        .accordion-body p {
+            margin-bottom: 1rem;
+        }
+
+        .accordion-body p:last-child {
+            margin-bottom: 0;
+        }
+
+        .accordion-body ul {
+            margin: 1rem 0 1rem 1.5rem;
+        }
+
+        .accordion-body li {
+            margin-bottom: 0.5rem;
+            line-height: 1.7;
+        }
+
+        .accordion-body a {
+            color: var(--primary);
+            text-decoration: underline;
+            transition: color 0.3s ease;
+        }
+
+        .accordion-body a:hover {
+            color: var(--primary-light);
+        }
+
+        .contact-box {
+            background: var(--bg-dark);
+            border: 1px solid var(--gray-300);
+            border-radius: 8px;
+            padding: 1.25rem;
+            margin-top: 1rem;
+        }
+
+        .contact-box p {
+            margin-bottom: 0.4rem;
+        }
+
+        .contact-box p:last-child {
+            margin-bottom: 0;
+        }
+
+        /* Expand/Collapse All Button */
+        .accordion-controls {
+            display: flex;
+            justify-content: flex-end;
+            margin-bottom: 1.5rem;
+            gap: 1rem;
+        }
+
+        .toggle-all-btn {
+            background: transparent;
+            border: 1px solid var(--gray-400);
+            color: var(--text-secondary);
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .toggle-all-btn:hover {
+            border-color: var(--primary);
+            color: var(--primary);
+            background: rgba(196, 30, 58, 0.1);
+        }
+
+        /* Animations */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes fadeInDown {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .legal-page {
+                padding: 6rem 1rem 3rem;
+            }
+
+            .legal-header h1 {
+                font-size: 2rem;
+            }
+
+            .accordion-title {
+                font-size: 1rem;
+            }
+
+            .accordion-header {
+                padding: 1rem;
+            }
+
+            .accordion-body {
+                padding: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="container">
+            <a href="index.html" class="logo">
+                <span class="logo-text">Un Foggiano nel Mondo</span>
+            </a>
+
+            <nav class="nav" id="mainNav">
+                <a href="index.html">Home</a>
+                <a href="index.html#torneo">Il Torneo</a>
+                <a href="index.html#contatti" class="nav-cta">Iscriviti Ora</a>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Privacy Policy Content -->
+    <main class="legal-page">
+        <div class="legal-container">
+            <a href="index.html" class="back-link">← Torna alla Home</a>
+            
+            <div class="legal-header">
+                <h1>Privacy Policy</h1>
+                <p class="last-updated">Ultimo aggiornamento: Novembre 2025</p>
+            </div>
+
+            <div class="accordion-controls">
+                <button class="toggle-all-btn" id="expandAll">
+                    <span>📖</span> Espandi tutto
+                </button>
+                <button class="toggle-all-btn" id="collapseAll">
+                    <span>📕</span> Chiudi tutto
+                </button>
+            </div>
+            
+            <div class="accordion-container">
+                <!-- Section 1 -->
+                <div class="accordion-item active">
+                    <div class="accordion-header">
+                        <span class="accordion-title">
+                            <span class="accordion-number">1</span>
+                            Titolare del Trattamento
+                        </span>
+                        <span class="accordion-icon">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                            </svg>
+                        </span>
+                    </div>
+                    <div class="accordion-content">
+                        <div class="accordion-body">
+                            <p>Il Titolare del trattamento dei dati personali è:</p>
+                            <div class="contact-box">
+                                <p><strong>Un Foggiano Nel Mondo</strong></p>
+                                <p>Email: <a href="mailto:info@foggianonelmondo.it">info@foggianonelmondo.it</a></p>
+                                <p>Telefono: +39 333 1234567</p>
+                                <p>Sede: Foggia, Italia</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Section 2 -->
+                <div class="accordion-item">
+                    <div class="accordion-header">
+                        <span class="accordion-title">
+                            <span class="accordion-number">2</span>
+                            Tipologie di Dati Raccolti
+                        </span>
+                        <span class="accordion-icon">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                            </svg>
+                        </span>
+                    </div>
+                    <div class="accordion-content">
+                        <div class="accordion-body">
+                            <p>I dati personali raccolti attraverso il modulo di iscrizione al torneo includono:</p>
+                            <ul>
+                                <li><strong>Dati identificativi:</strong> nome, cognome, data di nascita</li>
+                                <li><strong>Dati di contatto:</strong> indirizzo email, numero di telefono</li>
+                                <li><strong>Dati della squadra:</strong> nome squadra, città e paese di provenienza</li>
+                                <li><strong>Informazioni aggiuntive:</strong> note opzionali fornite dall'utente</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Section 3 -->
+                <div class="accordion-item">
+                    <div class="accordion-header">
+                        <span class="accordion-title">
+                            <span class="accordion-number">3</span>
+                            Finalità del Trattamento
+                        </span>
+                        <span class="accordion-icon">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                            </svg>
+                        </span>
+                    </div>
+                    <div class="accordion-content">
+                        <div class="accordion-body">
+                            <p>I dati personali sono raccolti e trattati per le seguenti finalità:</p>
+                            <ul>
+                                <li>Gestione delle iscrizioni al Torneo "Un Foggiano Nel Mondo"</li>
+                                <li>Comunicazioni relative all'organizzazione dell'evento</li>
+                                <li>Invio di informazioni logistiche e aggiornamenti sul torneo</li>
+                                <li>Adempimento di obblighi legali e regolamentari</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Section 4 -->
+                <div class="accordion-item">
+                    <div class="accordion-header">
+                        <span class="accordion-title">
+                            <span class="accordion-number">4</span>
+                            Base Giuridica del Trattamento
+                        </span>
+                        <span class="accordion-icon">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                            </svg>
+                        </span>
+                    </div>
+                    <div class="accordion-content">
+                        <div class="accordion-body">
+                            <p>Il trattamento dei dati personali si basa su:</p>
+                            <ul>
+                                <li><strong>Consenso:</strong> espresso attraverso l'accettazione della presente Privacy Policy</li>
+                                <li><strong>Esecuzione di un contratto:</strong> necessario per la gestione dell'iscrizione al torneo</li>
+                                <li><strong>Obblighi legali:</strong> adempimento di obblighi previsti dalla legge</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Section 5 -->
+                <div class="accordion-item">
+                    <div class="accordion-header">
+                        <span class="accordion-title">
+                            <span class="accordion-number">5</span>
+                            Conservazione dei Dati
+                        </span>
+                        <span class="accordion-icon">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                            </svg>
+                        </span>
+                    </div>
+                    <div class="accordion-content">
+                        <div class="accordion-body">
+                            <p>I dati personali saranno conservati per il tempo strettamente necessario alle finalità per cui sono stati raccolti:</p>
+                            <ul>
+                                <li>Dati di iscrizione: fino a 2 anni dopo la conclusione del torneo</li>
+                                <li>Dati contabili/fiscali: 10 anni come previsto dalla legge</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Section 6 -->
+                <div class="accordion-item">
+                    <div class="accordion-header">
+                        <span class="accordion-title">
+                            <span class="accordion-number">6</span>
+                            Diritti dell'Interessato
+                        </span>
+                        <span class="accordion-icon">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                            </svg>
+                        </span>
+                    </div>
+                    <div class="accordion-content">
+                        <div class="accordion-body">
+                            <p>In conformità al Regolamento UE 2016/679 (GDPR), l'interessato ha diritto di:</p>
+                            <ul>
+                                <li><strong>Accesso:</strong> ottenere conferma dell'esistenza di dati che lo riguardano</li>
+                                <li><strong>Rettifica:</strong> richiedere la correzione di dati inesatti</li>
+                                <li><strong>Cancellazione:</strong> richiedere la cancellazione dei propri dati</li>
+                                <li><strong>Limitazione:</strong> richiedere la limitazione del trattamento</li>
+                                <li><strong>Portabilità:</strong> ricevere i dati in formato strutturato</li>
+                                <li><strong>Opposizione:</strong> opporsi al trattamento dei dati</li>
+                                <li><strong>Revoca del consenso:</strong> revocare il consenso in qualsiasi momento</li>
+                            </ul>
+                            <p>Per esercitare questi diritti, contattare: <a href="mailto:info@foggianonelmondo.it">info@foggianonelmondo.it</a></p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Section 7 -->
+                <div class="accordion-item">
+                    <div class="accordion-header">
+                        <span class="accordion-title">
+                            <span class="accordion-number">7</span>
+                            Sicurezza dei Dati
+                        </span>
+                        <span class="accordion-icon">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                            </svg>
+                        </span>
+                    </div>
+                    <div class="accordion-content">
+                        <div class="accordion-body">
+                            <p>Adottiamo misure di sicurezza tecniche e organizzative adeguate per proteggere i dati personali:</p>
+                            <ul>
+                                <li>Crittografia delle comunicazioni (HTTPS)</li>
+                                <li>Accesso limitato ai dati solo al personale autorizzato</li>
+                                <li>Backup regolari dei dati</li>
+                                <li>Protezione contro attacchi informatici</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Section 8 -->
+                <div class="accordion-item">
+                    <div class="accordion-header">
+                        <span class="accordion-title">
+                            <span class="accordion-number">8</span>
+                            Trasferimento dei Dati
+                        </span>
+                        <span class="accordion-icon">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                            </svg>
+                        </span>
+                    </div>
+                    <div class="accordion-content">
+                        <div class="accordion-body">
+                            <p>I dati personali non vengono trasferiti a paesi terzi al di fuori dell'Unione Europea. In caso di necessità, il trasferimento avverrà solo verso paesi che garantiscono un livello adeguato di protezione dei dati.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Section 9 -->
+                <div class="accordion-item">
+                    <div class="accordion-header">
+                        <span class="accordion-title">
+                            <span class="accordion-number">9</span>
+                            Cookie Policy
+                        </span>
+                        <span class="accordion-icon">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                            </svg>
+                        </span>
+                    </div>
+                    <div class="accordion-content">
+                        <div class="accordion-body">
+                            <p>Questo sito utilizza solo cookie tecnici necessari al funzionamento. Non utilizziamo cookie di profilazione o di terze parti per finalità pubblicitarie.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Section 10 -->
+                <div class="accordion-item">
+                    <div class="accordion-header">
+                        <span class="accordion-title">
+                            <span class="accordion-number">10</span>
+                            Modifiche alla Privacy Policy
+                        </span>
+                        <span class="accordion-icon">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                            </svg>
+                        </span>
+                    </div>
+                    <div class="accordion-content">
+                        <div class="accordion-body">
+                            <p>Ci riserviamo il diritto di modificare questa Privacy Policy in qualsiasi momento. Le modifiche saranno pubblicate su questa pagina con indicazione della data di ultimo aggiornamento.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Section 11 -->
+                <div class="accordion-item">
+                    <div class="accordion-header">
+                        <span class="accordion-title">
+                            <span class="accordion-number">11</span>
+                            Contatti
+                        </span>
+                        <span class="accordion-icon">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                            </svg>
+                        </span>
+                    </div>
+                    <div class="accordion-content">
+                        <div class="accordion-body">
+                            <p>Per qualsiasi domanda relativa al trattamento dei dati personali:</p>
+                            <div class="contact-box">
+                                <p><strong>Email:</strong> <a href="mailto:info@foggianonelmondo.it">info@foggianonelmondo.it</a></p>
+                                <p><strong>Telefono:</strong> +39 333 1234567</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-brand">
+                    <h3>Un Foggiano nel Mondo</h3>
+                    <p>Torneo Internazionale di Calcio Over 55</p>
+                </div>
+                <div class="footer-links">
+                    <h4>Link Utili</h4>
+                    <a href="index.html#torneo">Il Torneo</a>
+                    <a href="index.html#contatti">Iscrizioni</a>
+                    <a href="privacy.html">Privacy Policy</a>
+                    <a href="regolamento.html">Regolamento</a>
+                </div>
+                <div class="footer-contact">
+                    <h4>Contatti</h4>
+                    <p>info@foggianonelmondo.it</p>
+                    <p>+39 333 1234567</p>
+                    <p>Foggia, Italia</p>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2025 Un Foggiano nel Mondo. Tutti i diritti riservati.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Accordion functionality
+        document.querySelectorAll('.accordion-header').forEach(header => {
+            header.addEventListener('click', function() {
+                const item = this.parentElement;
+                const isActive = item.classList.contains('active');
+                
+                // Toggle current item
+                item.classList.toggle('active');
+                
+                // Add ripple effect
+                const ripple = document.createElement('div');
+                ripple.style.cssText = `
+                    position: absolute;
+                    background: rgba(196, 30, 58, 0.3);
+                    border-radius: 50%;
+                    transform: scale(0);
+                    animation: ripple 0.6s linear;
+                    pointer-events: none;
+                `;
+                this.style.position = 'relative';
+                this.style.overflow = 'hidden';
+                this.appendChild(ripple);
+                
+                setTimeout(() => ripple.remove(), 600);
+            });
+        });
+
+        // Expand All button
+        document.getElementById('expandAll').addEventListener('click', function() {
+            document.querySelectorAll('.accordion-item').forEach((item, index) => {
+                setTimeout(() => {
+                    item.classList.add('active');
+                }, index * 50);
+            });
+        });
+
+        // Collapse All button
+        document.getElementById('collapseAll').addEventListener('click', function() {
+            document.querySelectorAll('.accordion-item').forEach((item, index) => {
+                setTimeout(() => {
+                    item.classList.remove('active');
+                }, index * 30);
+            });
+        });
+
+        // Add ripple animation keyframes
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes ripple {
+                to {
+                    transform: scale(4);
+                    opacity: 0;
+                }
+            }
+        `;
+        document.head.appendChild(style);
+    </script>
+    <script src="../js/analytics/analytics.js" async defer></script>
+</body>
+</html>

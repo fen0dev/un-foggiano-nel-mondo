@@ -424,6 +424,83 @@ class DatabaseManager {
             FROM analytics_sessions
         `).get();
 
+        const recentEvents = this.db.prepare(`
+            SELECT category, action, label, timestamp
+            FROM analytics_events
+            WHERE timestamp >= ?
+            ORDER BY timestamp DESC
+            LIMIT 20
+        `).all(sinceStr);
+
+        const scrollStats = this.db.prepare(`
+            SELECT 
+                label as depth,
+                COUNT(*) as count
+            FROM analytics_events
+            WHERE category = 'Engagement' AND action = 'Scroll Depth' AND timestamp >= ?
+            GROUP BY label
+            ORDER BY CAST(REPLACE(label, '%', '') AS INTEGER)
+        `).all(sinceStr);
+
+        const deviceStats = this.db.prepare(`
+            SELECT 
+                json_extract(metadata, '$.deviceInfo.platform') as platform,
+                json_extract(metadata, '$.deviceInfo.browser') as browser,
+                COUNT(*) as count
+            FROM analytics_events
+            WHERE category = 'Device' AND action = 'Info' AND timestamp >= ?
+            GROUP BY platform, browser
+            ORDER BY count DESC
+        `).all(sinceStr);
+
+        const topPages = this.db.prepare(`
+            SELECT page, COUNT(*) as views, COUNT(DISTINCT session_id) as unique_views
+            FROM analytics_pageviews
+            WHERE timestamp >= ?
+            GROUP BY page
+            ORDER BY views DESC
+            LIMIT 10
+        `).all(sinceStr);
+
+        const engagementStats = this.db.prepare(`
+            SELECT 
+                AVG(value) as average_score,
+                MAX(value) as max_score,
+                MIN(value) as min_score,
+                COUNT(*) as total
+            FROM analytics_events
+            WHERE category = 'Engagement' AND action = 'Score' AND timestamp >= ?
+        `).all(sinceStr);
+
+        const hourlyStats = this.db.prepare(`
+            SELECT 
+                strftime('%H', timestamp) as hour,
+                COUNT(*) as count
+            FROM analytics_pageviews
+            WHERE timestamp >= ?
+            GROUP BY hour
+            ORDER BY hour
+        `).all(sinceStr);
+
+        const performanceStats = this.db.prepare(`
+            SELECT 
+                action as metric,
+                AVG(value) as average,
+                MIN(value) as min,
+                MAX(value) as max
+            FROM analytics_events
+            WHERE category = 'Performance' AND action IN ('LCP', 'FID', 'CLS') AND timestamp >= ?
+            GROUP BY action
+        `).all(sinceStr);
+
+        const funnelStats = {
+            pageLoad: this.db.prepare(`SELECT COUNT(DISTINCT session_id) as count FROM analytics_pageviews WHERE timestamp >= ?`).get(sinceStr)?.count || 0,
+            puzzleStart: this.db.prepare(`SELECT COUNT(DISTINCT session_id) as count FROM analytics_puzzle WHERE action = 'start' AND timestamp >= ?`).get(sinceStr)?.count || 0,
+            puzzleComplete: this.db.prepare(`SELECT COUNT(DISTINCT session_id) as count FROM analytics_puzzle WHERE action = 'complete' AND timestamp >= ?`).get(sinceStr)?.count || 0,
+            formStart: this.db.prepare(`SELECT COUNT(DISTINCT session_id) as count FROM analytics_form WHERE action = 'start' AND timestamp >= ?`).get(sinceStr)?.count || 0,
+            formSubmit: this.db.prepare(`SELECT COUNT(DISTINCT session_id) as count FROM analytics_form WHERE action = 'submit' AND timestamp >= ?`).get(sinceStr)?.count || 0
+        };
+
         return {
             pageviews: {
                 total: pageviews.reduce((sum, p) => sum + p.count, 0),
@@ -453,7 +530,22 @@ class DatabaseManager {
                 total: sessions?.total || 0,
                 today: sessions?.today || 0
             },
-            dailyStats: dailyStats
+            dailyStats: dailyStats,
+            recentEvents: recentEvents,
+            scrollDepth: scrollStats,
+            devices: deviceStats,
+            topPages: topPages,
+            engagement: {
+                average: Math.round(engagementStats?.average_score || 0),
+                max: engagementStats?.max_score || 0,
+                total: engagementStats?.total || 0
+            },
+            hourlyDistribution: hourlyStats,
+            performance: performanceStats.reduce((acc, p) => {
+                acc[p.metric] = { avg: Math.round(p.average), min: p.min, max: p.max };
+                return acc;
+            }, {}),
+            funnel: funnelStats
         };
     }
 

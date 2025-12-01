@@ -50,10 +50,12 @@ app.use(helmet({
     contentSecurityPolicy: {
         directives: {
             defaultSrc: ["'self'"],
-            styleSrc: ["'self'", "'unsafe-inline'"],
-            scriptSrc: ["'self'", "https://www.google.com", "https://www.gstatic.com"],
+            styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
+            scriptSrc: ["'self'", "'unsafe-inline'", "https://www.google.com", "https://www.gstatic.com"],
+            fontSrc: ["'self'", "https://fonts.gstatic.com"],
             imgSrc: ["'self'", "data:", "https:"],
             frameSrc: ["https://www.google.com"],
+            connectSrc: ["'self'"],
         },
     },
 }));
@@ -178,6 +180,28 @@ app.get('/admin', (req, res) => {
 
 app.get('/admin.html', (req, res) => {
     res.redirect('/admin');
+});
+
+// ==========================================
+// ENDPOINT: PAGINA PRIVACY
+// ==========================================
+app.get('/privacy', (req, res) => {
+    res.sendFile(path.join(frontendPath, 'html', 'privacy.html'));
+});
+
+app.get('/privacy.html', (req, res) => {
+    res.redirect('/privacy');
+});
+
+// ==========================================
+// ENDPOINT: PAGINA REGOLAMENTO
+// ==========================================
+app.get('/regolamento', (req, res) => {
+    res.sendFile(path.join(frontendPath, 'html', 'regolamento.html'));
+});
+
+app.get('/regolamento.html', (req, res) => {
+    res.redirect('/regolamento');
 });
 
 // ==========================================

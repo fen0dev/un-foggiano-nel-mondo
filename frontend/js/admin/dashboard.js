@@ -530,6 +530,24 @@ class AdminDashboard {
 
         // Recent events
         this.renderRecentEvents();
+
+        // Additional metrics
+        document.getElementById('avgEngagement').textContent = 
+            this.analytics.engagement?.average || 0;
+        document.getElementById('formConversion').textContent = 
+            this.analytics.form?.conversionRate || '0%';
+        document.getElementById('todayVisitors').textContent = 
+            this.analytics.sessions?.today || 0;
+        document.getElementById('puzzleAvgTime').textContent = 
+            this.analytics.puzzle?.averageTime || 'N/A';
+
+        // New charts
+        this.renderFunnel();
+        this.renderScrollDepth();
+        this.renderDevices();
+        this.renderTopPages();
+        this.renderHourlyChart();
+        this.renderPerformance();
     }
 
     renderDailyChart() {
@@ -592,6 +610,180 @@ class AdminDashboard {
                 <span class="event-time">${this.formatTime(e.timestamp)}</span>
             </div>
         `).join('');
+    }
+
+    renderFunnel() {
+        const funnel = this.analytics?.funnel || {};
+        const container = document.getElementById('funnelChart');
+        
+        const steps = [
+            { label: 'Visita Pagina', value: funnel.pageLoad || 0, color: '#3b82f6' },
+            { label: 'Inizio Puzzle', value: funnel.puzzleStart || 0, color: '#8b5cf6' },
+            { label: 'Completa Puzzle', value: funnel.puzzleComplete || 0, color: '#06b6d4' },
+            { label: 'Inizio Form', value: funnel.formStart || 0, color: '#f59e0b' },
+            { label: 'Invia Form', value: funnel.formSubmit || 0, color: '#10b981' }
+        ];
+        
+        const maxValue = Math.max(...steps.map(s => s.value), 1);
+        
+        container.innerHTML = `
+            <div class="funnel-steps">
+                ${steps.map((step, i) => {
+                    const width = (step.value / maxValue) * 100;
+                    const dropoff = i > 0 && steps[i-1].value > 0 
+                        ? Math.round((1 - step.value / steps[i-1].value) * 100) 
+                        : 0;
+                    return `
+                        <div class="funnel-step">
+                            <div class="funnel-bar" style="width: ${width}%; background: ${step.color}">
+                                <span class="funnel-value">${step.value}</span>
+                            </div>
+                            <div class="funnel-label">${step.label}</div>
+                            ${dropoff > 0 ? `<div class="funnel-dropoff">-${dropoff}%</div>` : ''}
+                        </div>
+                    `;
+                }).join('')}
+            </div>
+        `;
+    }
+
+    renderScrollDepth() {
+        const scrollData = this.analytics?.scrollDepth || [];
+        const container = document.getElementById('scrollDepthChart');
+        
+        if (scrollData.length === 0) {
+            container.innerHTML = '<div class="empty-state-text">Nessun dato</div>';
+            return;
+        }
+        
+        const maxCount = Math.max(...scrollData.map(s => s.count), 1);
+        
+        container.innerHTML = scrollData.map(item => {
+            const width = (item.count / maxCount) * 100;
+            return `
+                <div class="scroll-bar-item">
+                    <span class="scroll-label">${item.depth}</span>
+                    <div class="scroll-bar-container">
+                        <div class="scroll-bar" style="width: ${width}%"></div>
+                    </div>
+                    <span class="scroll-count">${item.count}</span>
+                </div>
+            `;
+        }).join('');
+    }
+
+    renderDevices() {
+        const devices = this.analytics?.devices || [];
+        const container = document.getElementById('devicesChart');
+        
+        if (devices.length === 0) {
+            container.innerHTML = '<div class="empty-state-text">Nessun dato</div>';
+            return;
+        }
+        
+        container.innerHTML = devices.slice(0, 8).map(d => `
+            <div class="device-item">
+                <span class="device-icon">${this.getDeviceIcon(d.platform)}</span>
+                <span class="device-name">${d.platform || 'Unknown'} - ${d.browser || 'Unknown'}</span>
+                <span class="device-count">${d.count}</span>
+            </div>
+        `).join('');
+    }
+
+    renderTopPages() {
+        const pages = this.analytics?.topPages || [];
+        const container = document.getElementById('topPagesChart');
+        
+        if (pages.length === 0) {
+            container.innerHTML = '<div class="empty-state-text">Nessun dato</div>';
+            return;
+        }
+        
+        container.innerHTML = pages.map((p, i) => `
+            <div class="page-item">
+                <span class="page-rank">#${i + 1}</span>
+                <span class="page-name">${p.page}</span>
+                <span class="page-views">${p.views} (${p.unique_views} unici)</span>
+            </div>
+        `).join('');
+    }
+
+    renderHourlyChart() {
+        const hourly = this.analytics?.hourlyDistribution || [];
+        const container = document.getElementById('hourlyChart');
+        
+        if (hourly.length === 0) {
+            container.innerHTML = '<div class="empty-state-text">Nessun dato</div>';
+            return;
+        }
+        
+        // Crea array completo 0-23
+        const hourlyMap = hourly.reduce((acc, h) => { acc[h.hour] = h.count; return acc; }, {});
+        const maxCount = Math.max(...Object.values(hourlyMap), 1);
+        
+        container.innerHTML = `
+            <div class="hourly-bars">
+                ${Array.from({length: 24}, (_, i) => {
+                    const hour = i.toString().padStart(2, '0');
+                    const count = hourlyMap[hour] || 0;
+                    const height = (count / maxCount) * 60;
+                    return `
+                        <div class="hour-bar" title="${hour}:00 - ${count} visite">
+                            <div class="hour-fill" style="height: ${Math.max(height, 2)}px"></div>
+                            <span class="hour-label">${i}</span>
+                        </div>
+                    `;
+                }).join('')}
+            </div>
+        `;
+    }
+
+    renderPerformance() {
+        const perf = this.analytics?.performance || {};
+        const container = document.getElementById('performanceChart');
+        
+        const metrics = [
+            { key: 'LCP', label: 'Largest Contentful Paint', unit: 'ms', good: 2500, bad: 4000 },
+            { key: 'FID', label: 'First Input Delay', unit: 'ms', good: 100, bad: 300 },
+            { key: 'CLS', label: 'Cumulative Layout Shift', unit: '', good: 100, bad: 250, scale: 1000 }
+        ];
+        
+        container.innerHTML = metrics.map(m => {
+            const data = perf[m.key];
+            if (!data) return `
+                <div class="perf-item">
+                    <div class="perf-header">
+                        <span class="perf-name">${m.label}</span>
+                        <span class="perf-badge neutral">N/A</span>
+                    </div>
+                </div>
+            `;
+            
+            const value = m.scale ? data.avg / m.scale : data.avg;
+            const displayValue = m.scale ? value.toFixed(3) : value;
+            const status = value <= m.good ? 'good' : value <= m.bad ? 'needs-improvement' : 'poor';
+            
+            return `
+                <div class="perf-item">
+                    <div class="perf-header">
+                        <span class="perf-name">${m.label}</span>
+                        <span class="perf-badge ${status}">${displayValue}${m.unit}</span>
+                    </div>
+                    <div class="perf-bar">
+                        <div class="perf-fill ${status}" style="width: ${Math.min((value / m.bad) * 100, 100)}%"></div>
+                    </div>
+                </div>
+            `;
+        }).join('');
+    }
+
+    getDeviceIcon(platform) {
+        const icons = {
+            'iOS': '📱', 'Android': '📱', 
+            'Windows': '💻', 'macOS': '🖥️', 'Linux': '🐧',
+            'Unknown': '❓'
+        };
+        return icons[platform] || '📱';
     }
 
     renderLogs(logs) {
