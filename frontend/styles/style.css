@@ -278,7 +278,7 @@ body {
     font-size: 4rem;
     font-weight: 900;
     margin-bottom: 0.75rem;
-    line-height: 1.1;
+    line-height: 1.5;
     background: linear-gradient(135deg, #ffffff 0%, #c9d1d9 50%, #8b949e 100%);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
@@ -1715,5 +1715,248 @@ body {
     
     .section-title {
         font-size: 1.75rem;
+    }
+}
+
+/* ==========================================
+   ISCRIZIONE LAYOUT - 2 Colonne
+   ========================================== */
+.iscrizione-layout {
+    display: grid;
+    grid-template-columns: 320px 1fr;
+    gap: 2rem;
+    align-items: start;
+    max-width: 1100px;
+    margin: 0 auto;
+}
+
+.iscrizione-sidebar {
+    position: relative;
+}
+
+.info-box-sticky {
+    position: sticky;
+    top: 100px;
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+}
+
+/* Price Box */
+.price-box {
+    background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+    border-radius: 16px;
+    padding: 1.75rem;
+    text-align: center;
+    box-shadow: 0 10px 40px rgba(196, 30, 58, 0.3);
+}
+
+.price-badge {
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    color: rgba(255, 255, 255, 0.9);
+    margin-bottom: 0.5rem;
+}
+
+.price-amount {
+    font-family: 'Merriweather', Georgia, serif;
+    font-size: 3.5rem;
+    font-weight: 900;
+    color: var(--white);
+    line-height: 1;
+    margin-bottom: 0.25rem;
+}
+
+.price-note {
+    font-size: 0.95rem;
+    color: rgba(255, 255, 255, 0.8);
+}
+
+/* Deadline Box */
+.deadline-box {
+    background: var(--bg-dark);
+    border: 2px solid var(--primary);
+    border-radius: 12px;
+    padding: 1.25rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: 0.5rem;
+}
+
+.deadline-icon {
+    font-size: 2rem;
+}
+
+.deadline-text {
+    display: flex;
+    flex-direction: column;
+}
+
+.deadline-label {
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--text-muted);
+}
+
+.deadline-date {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--primary);
+}
+
+.deadline-countdown {
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    padding-top: 0.5rem;
+    border-top: 1px solid var(--gray-300);
+    width: 100%;
+}
+
+.countdown-mini {
+    font-weight: 700;
+    color: var(--primary);
+    font-size: 1.1rem;
+}
+
+/* Info Accordion */
+.info-accordion {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.info-accordion-item {
+    background: var(--bg-dark);
+    border: 1px solid var(--gray-300);
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+.info-accordion-header {
+    width: 100%;
+    background: none;
+    border: none;
+    padding: 1rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    cursor: pointer;
+    color: var(--text-primary);
+    font-size: 0.9rem;
+    font-weight: 500;
+    text-align: left;
+    transition: all 0.3s ease;
+}
+
+.info-accordion-header:hover {
+    background: rgba(196, 30, 58, 0.1);
+}
+
+.info-accordion-item.active .info-accordion-header {
+    background: rgba(196, 30, 58, 0.15);
+    color: var(--primary);
+}
+
+.accordion-chevron {
+    font-size: 0.7rem;
+    transition: transform 0.3s ease;
+    color: var(--primary);
+}
+
+.info-accordion-item.active .accordion-chevron {
+    transform: rotate(180deg);
+}
+
+.info-accordion-content {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.3s ease;
+}
+
+.info-accordion-item.active .info-accordion-content {
+    max-height: 300px;
+}
+
+.info-accordion-content ul,
+.info-accordion-content p {
+    padding: 0 1rem 1rem;
+    color: var(--text-secondary);
+    font-size: 0.85rem;
+    line-height: 1.6;
+}
+
+.info-accordion-content ul {
+    padding-left: 2rem;
+}
+
+.info-accordion-content li {
+    margin-bottom: 0.25rem;
+}
+
+/* Help Box */
+.help-box {
+    background: var(--bg-dark-lighter);
+    border-radius: 10px;
+    padding: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    border: 1px solid var(--gray-300);
+}
+
+.help-icon {
+    font-size: 1.5rem;
+}
+
+.help-text {
+    flex: 1;
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+}
+
+.help-link {
+    color: var(--primary);
+    font-weight: 600;
+    font-size: 0.85rem;
+    text-decoration: none;
+    transition: color 0.3s;
+}
+
+.help-link:hover {
+    color: var(--primary-light);
+    text-decoration: underline;
+}
+
+/* Responsive */
+@media (max-width: 900px) {
+    .iscrizione-layout {
+        grid-template-columns: 1fr;
+    }
+    
+    .iscrizione-sidebar {
+        order: -1;
+    }
+    
+    .info-box-sticky {
+        position: relative;
+        top: 0;
+    }
+    
+    .price-box {
+        padding: 1.5rem;
+    }
+    
+    .price-amount {
+        font-size: 2.5rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .price-amount {
+        font-size: 2rem;
     }
 }

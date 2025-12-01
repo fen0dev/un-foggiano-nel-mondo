@@ -294,11 +294,6 @@
                     </div>
                 </div>
             </div>
-            
-            <!-- Messaggio -->
-            <div class="galleria-notice fade-in">
-                <p>La galleria fotografica sarà disponibile dopo la prima edizione del torneo.</p>
-            </div>
         </div>
     </section>
 
@@ -307,181 +302,270 @@
         <div class="container">
             <h2 class="section-title slide-in">Iscrizioni e Contatti</h2>
             
-            <!-- Form di Iscrizione -->
-            <div class="form-container fade-in">
-                <h3 class="form-title">Iscriviti al Torneo</h3>
-                <form id="iscrizioneForm" class="iscrizione-form" novalidate>
-                    <!-- CSRF Token (verrà generato dal backend) -->
-                    <input type="hidden" id="csrfToken" name="csrfToken">
-                    
-                    <!-- Informazioni Squadra -->
-                    <div class="form-section">
-                        <h4 class="section-header">Informazioni Squadra</h4>
-                        
-                        <div class="form-group">
-                            <label for="nomeSquadra">Nome Squadra *</label>
-                            <input type="text" id="nomeSquadra" name="nomeSquadra" required 
-                                   minlength="3" maxlength="50" 
-                                   pattern="[A-Za-z0-9\s\-_]+"
-                                   placeholder="Es: Foggia United">
-                            <span class="error-message"></span>
+            <!-- Layout 2 colonne: Info + Form -->
+            <div class="iscrizione-layout">
+                
+                <!-- Sidebar Informazioni -->
+                <aside class="iscrizione-sidebar fade-in">
+                    <div class="info-box-sticky">
+                        <!-- Prezzo -->
+                        <div class="price-box">
+                            <div class="price-badge">💰 Quota Iscrizione</div>
+                            <div class="price-amount">€500</div>
+                            <div class="price-note">per squadra</div>
                         </div>
                         
-                        <div class="form-group">
-                            <label for="cittaSquadra">Città di Provenienza *</label>
-                            <input type="text" id="cittaSquadra" name="cittaSquadra" required 
-                                   minlength="2" maxlength="50"
-                                   placeholder="Es: Foggia">
-                            <span class="error-message"></span>
+                        <!-- Countdown Scadenza -->
+                        <div class="deadline-box">
+                            <div class="deadline-icon">⏰</div>
+                            <div class="deadline-text">
+                                <span class="deadline-label">Chiusura Iscrizioni</span>
+                                <span class="deadline-date">15 Maggio 2026</span>
+                            </div>
+                            <div class="deadline-countdown" id="registrationCountdown">
+                                <span class="countdown-mini" id="regDays">--</span> giorni
+                            </div>
                         </div>
                         
-                        <div class="form-group">
-                            <label for="paeseSquadra">Paese *</label>
-                            <select id="paeseSquadra" name="paeseSquadra" required>
-                                <option value="">Seleziona un paese</option>
-                                <option value="IT">Italia</option>
-                                <option value="US">Stati Uniti</option>
-                                <option value="GB">Regno Unito</option>
-                                <option value="DE">Germania</option>
-                                <option value="FR">Francia</option>
-                                <option value="ES">Spagna</option>
-                                <option value="BR">Brasile</option>
-                                <option value="AR">Argentina</option>
-                                <option value="AU">Australia</option>
-                                <option value="OTHER">Altro</option>
-                            </select>
-                            <span class="error-message"></span>
+                        <!-- Accordion FAQ Rapide -->
+                        <div class="info-accordion">
+                            <div class="info-accordion-item">
+                                <button class="info-accordion-header" type="button">
+                                    <span>📋 Cosa include la quota?</span>
+                                    <span class="accordion-chevron">▼</span>
+                                </button>
+                                <div class="info-accordion-content">
+                                    <ul>
+                                        <li>Partecipazione al torneo</li>
+                                        <li>Kit di benvenuto</li>
+                                        <li>Gadget ufficiali</li>
+                                        <li>Pranzo del giorno dell'evento</li>
+                                        <li>Assicurazione sportiva</li>
+                                    </ul>
+                                </div>
+                            </div>
+                            
+                            <div class="info-accordion-item">
+                                <button class="info-accordion-header" type="button">
+                                    <span>👥 Quanti giocatori per squadra?</span>
+                                    <span class="accordion-chevron">▼</span>
+                                </button>
+                                <div class="info-accordion-content">
+                                    <p>Minimo <strong>11 giocatori</strong>, massimo <strong>25 giocatori</strong> per squadra. Almeno 1 giocatore deve essere originario della provincia di Foggia.</p>
+                                </div>
+                            </div>
+                            
+                            <div class="info-accordion-item">
+                                <button class="info-accordion-header" type="button">
+                                    <span>💳 Come si paga?</span>
+                                    <span class="accordion-chevron">▼</span>
+                                </button>
+                                <div class="info-accordion-content">
+                                    <p>Dopo l'approvazione dell'iscrizione, riceverai le istruzioni per il pagamento via:</p>
+                                    <ul>
+                                        <li>Bonifico bancario</li>
+                                        <li>PayPal</li>
+                                        <li>Carta di credito</li>
+                                    </ul>
+                                </div>
+                            </div>
+                            
+                            <div class="info-accordion-item">
+                                <button class="info-accordion-header" type="button">
+                                    <span>📧 Conferma iscrizione?</span>
+                                    <span class="accordion-chevron">▼</span>
+                                </button>
+                                <div class="info-accordion-content">
+                                    <p>Riceverai una email di conferma entro <strong>48 ore</strong> dall'invio del modulo. L'iscrizione sarà confermata definitivamente dopo il pagamento.</p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- CTA Contatto -->
+                        <div class="help-box">
+                            <span class="help-icon">💬</span>
+                            <span class="help-text">Hai domande?</span>
+                            <a href="mailto:info@foggianonelmondo.it" class="help-link">Contattaci</a>
                         </div>
                     </div>
-                    
-                    <!-- Capitano Squadra -->
-                    <div class="form-section">
-                        <h4 class="section-header">Capitano Squadra</h4>
+                </aside>
+                
+                <!-- Form di Iscrizione -->
+                <div class="form-container fade-in">
+                    <h3 class="form-title">Iscriviti al Torneo</h3>
+                    <form id="iscrizioneForm" class="iscrizione-form" novalidate>
+                        <!-- CSRF Token (verrà generato dal backend) -->
+                        <input type="hidden" id="csrfToken" name="csrfToken">
                         
-                        <div class="form-group">
-                            <label for="nomeCapitano">Nome *</label>
-                            <input type="text" id="nomeCapitano" name="nomeCapitano" required 
-                                   minlength="2" maxlength="30"
-                                   pattern="[A-Za-zÀ-ÿ\s]+"
-                                   placeholder="Nome">
-                            <span class="error-message"></span>
-                        </div>
-                        
-                        <div class="form-group">
-                            <label for="cognomeCapitano">Cognome *</label>
-                            <input type="text" id="cognomeCapitano" name="cognomeCapitano" required 
-                                   minlength="2" maxlength="30"
-                                   pattern="[A-Za-zÀ-ÿ\s]+"
-                                   placeholder="Cognome">
-                            <span class="error-message"></span>
-                        </div>
-                        
-                        <div class="form-group">
-                            <label for="emailCapitano">Email *</label>
-                            <input type="email" id="emailCapitano" name="emailCapitano" required 
-                                   maxlength="100"
-                                   placeholder="esempio@email.com">
-                            <span class="error-message"></span>
-                        </div>
-                        
-                        <div class="form-group">
-                            <label for="telefonoCapitano">Telefono *</label>
-                            <input type="tel" id="telefonoCapitano" name="telefonoCapitano" required 
-                                   pattern="[\d\s\+\-\(\)]+"
-                                   minlength="10" maxlength="20"
-                                   placeholder="+39 333 1234567">
-                            <span class="error-message"></span>
-                        </div>
-                        
-                        <div class="form-group">
-                            <label for="dataNascitaCapitano">Data di Nascita *</label>
-                            <input type="date" id="dataNascitaCapitano" name="dataNascitaCapitano" required>
-                            <span class="error-message"></span>
-                        </div>
-                        
-                        <div class="form-group">
-                            <label for="provinciaFoggia">Provincia di Foggia *</label>
-                            <select id="provinciaFoggia" name="provinciaFoggia" required>
-                                <option value="">Seleziona</option>
-                                <option value="si">Sì, sono della provincia di Foggia</option>
-                                <option value="no">No, ma ho almeno un giocatore della provincia di Foggia</option>
-                            </select>
-                            <span class="error-message"></span>
-                        </div>
-                    </div>
-                    
-                    <!-- Partecipanti -->
-                    <div class="form-section">
-                        <h4 class="section-header">Numero Partecipanti</h4>
-                        
-                        <div class="form-group">
-                            <label for="numeroGiocatori">Numero Giocatori (min 11, max 25) *</label>
-                            <input type="number" id="numeroGiocatori" name="numeroGiocatori" required 
-                                   min="11" max="25" value="11">
-                            <span class="error-message"></span>
-                        </div>
-                    </div>
-                    
-                    <!-- Note -->
-                    <div class="form-section">
-                        <div class="form-group">
-                            <label for="note">Note Aggiuntive</label>
-                            <textarea id="note" name="note" rows="4" maxlength="500" 
-                                      placeholder="Informazioni aggiuntive sulla squadra..."></textarea>
-                            <span class="char-count"><span id="charCount">0</span>/500</span>
-                        </div>
-                    </div>
-                    
-                    <!-- Privacy e Consensi -->
-                    <div class="form-section">
-                        <div class="form-group checkbox-group">
-                            <label class="checkbox-label">
-                                <input type="checkbox" id="privacy" name="privacy" required>
-                                <span>Accetto la <a href="/privacy" target="_blank">Privacy Policy</a> *</span>
-                            </label>
-                            <span class="error-message"></span>
+                        <!-- Informazioni Squadra -->
+                        <div class="form-section">
+                            <h4 class="section-header">Informazioni Squadra</h4>
+                            
+                            <div class="form-group">
+                                <label for="nomeSquadra">Nome Squadra *</label>
+                                <input type="text" id="nomeSquadra" name="nomeSquadra" required 
+                                       minlength="3" maxlength="50" 
+                                       pattern="[A-Za-z0-9\s\-_]+"
+                                       placeholder="Es: Foggia United">
+                                <span class="error-message"></span>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="cittaSquadra">Città di Provenienza *</label>
+                                <input type="text" id="cittaSquadra" name="cittaSquadra" required 
+                                       minlength="2" maxlength="50"
+                                       placeholder="Es: Foggia">
+                                <span class="error-message"></span>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="paeseSquadra">Paese *</label>
+                                <select id="paeseSquadra" name="paeseSquadra" required>
+                                    <option value="">Seleziona un paese</option>
+                                    <option value="IT">Italia</option>
+                                    <option value="US">Stati Uniti</option>
+                                    <option value="GB">Regno Unito</option>
+                                    <option value="DE">Germania</option>
+                                    <option value="FR">Francia</option>
+                                    <option value="ES">Spagna</option>
+                                    <option value="BR">Brasile</option>
+                                    <option value="AR">Argentina</option>
+                                    <option value="AU">Australia</option>
+                                    <option value="OTHER">Altro</option>
+                                </select>
+                                <span class="error-message"></span>
+                            </div>
                         </div>
                         
-                        <div class="form-group checkbox-group">
-                            <label class="checkbox-label">
-                                <input type="checkbox" id="regolamento" name="regolamento" required>
-                                <span>Ho letto e accetto il <a href="/regolamento" target="_blank">Regolamento del Torneo</a> *</span>
-                            </label>
-                            <span class="error-message"></span>
+                        <!-- Capitano Squadra -->
+                        <div class="form-section">
+                            <h4 class="section-header">Capitano Squadra</h4>
+                            
+                            <div class="form-group">
+                                <label for="nomeCapitano">Nome *</label>
+                                <input type="text" id="nomeCapitano" name="nomeCapitano" required 
+                                       minlength="2" maxlength="30"
+                                       pattern="[A-Za-zÀ-ÿ\s]+"
+                                       placeholder="Nome">
+                                <span class="error-message"></span>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="cognomeCapitano">Cognome *</label>
+                                <input type="text" id="cognomeCapitano" name="cognomeCapitano" required 
+                                       minlength="2" maxlength="30"
+                                       pattern="[A-Za-zÀ-ÿ\s]+"
+                                       placeholder="Cognome">
+                                <span class="error-message"></span>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="emailCapitano">Email *</label>
+                                <input type="email" id="emailCapitano" name="emailCapitano" required 
+                                       maxlength="100"
+                                       placeholder="esempio@email.com">
+                                <span class="error-message"></span>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="telefonoCapitano">Telefono *</label>
+                                <input type="tel" id="telefonoCapitano" name="telefonoCapitano" required 
+                                       pattern="[\d\s\+\-\(\)]+"
+                                       minlength="10" maxlength="20"
+                                       placeholder="+39 333 1234567">
+                                <span class="error-message"></span>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="dataNascitaCapitano">Data di Nascita *</label>
+                                <input type="date" id="dataNascitaCapitano" name="dataNascitaCapitano" required>
+                                <span class="error-message"></span>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="provinciaFoggia">Provincia di Foggia *</label>
+                                <select id="provinciaFoggia" name="provinciaFoggia" required>
+                                    <option value="">Seleziona</option>
+                                    <option value="si">Sì, sono della provincia di Foggia</option>
+                                    <option value="no">No, ma ho almeno un giocatore della provincia di Foggia</option>
+                                </select>
+                                <span class="error-message"></span>
+                            </div>
                         </div>
-                    </div>
-                    
-                    <!-- reCAPTCHA -->
-                    <div class="form-group">
-                        <div id="recaptcha-container"></div>
-                        <span class="error-message" id="recaptcha-error"></span>
-                    </div>
-                    
-                    <!-- Submit Button -->
-                    <div class="form-actions">
-                        <button type="submit" id="submitBtn" class="submit-btn">
-                            <span class="btn-text">Invia Iscrizione</span>
-                            <span class="btn-loader" style="display: none;">⏳</span>
-                        </button>
-                    </div>
-                    
-                    <!-- Messaggio di successo/errore -->
-                    <div id="formMessage" class="form-message" style="display: none;"></div>
-                </form>
-            </div>
-            
-            <!-- Informazioni Contatto -->
-            <div class="contatti-info fade-in">
-                <h3>Contatti</h3>
-                <p>Per maggiori informazioni:</p>
-                <div class="contatti-list">
-                    <div class="contatto-item">
-                        <span class="contatto-label">Email</span>
-                        <a href="mailto:info@foggianonelmondo.it">info@foggianonelmondo.it</a>
-                    </div>
-                    <div class="contatto-item">
-                        <span class="contatto-label">Telefono</span>
-                        <a href="tel:+393331234567">+39 333 1234567</a>
+                        
+                        <!-- Partecipanti -->
+                        <div class="form-section">
+                            <h4 class="section-header">Numero Partecipanti</h4>
+                            
+                            <div class="form-group">
+                                <label for="numeroGiocatori">Numero Giocatori (min 11, max 25) *</label>
+                                <input type="number" id="numeroGiocatori" name="numeroGiocatori" required 
+                                       min="11" max="25" value="11">
+                                <span class="error-message"></span>
+                            </div>
+                        </div>
+                        
+                        <!-- Note -->
+                        <div class="form-section">
+                            <div class="form-group">
+                                <label for="note">Note Aggiuntive</label>
+                                <textarea id="note" name="note" rows="4" maxlength="500" 
+                                          placeholder="Informazioni aggiuntive sulla squadra..."></textarea>
+                                <span class="char-count"><span id="charCount">0</span>/500</span>
+                            </div>
+                        </div>
+                        
+                        <!-- Privacy e Consensi -->
+                        <div class="form-section">
+                            <div class="form-group checkbox-group">
+                                <label class="checkbox-label">
+                                    <input type="checkbox" id="privacy" name="privacy" required>
+                                    <span>Accetto la <a href="/privacy" target="_blank">Privacy Policy</a> *</span>
+                                </label>
+                                <span class="error-message"></span>
+                            </div>
+                            
+                            <div class="form-group checkbox-group">
+                                <label class="checkbox-label">
+                                    <input type="checkbox" id="regolamento" name="regolamento" required>
+                                    <span>Ho letto e accetto il <a href="/regolamento" target="_blank">Regolamento del Torneo</a> *</span>
+                                </label>
+                                <span class="error-message"></span>
+                            </div>
+                        </div>
+                        
+                        <!-- reCAPTCHA -->
+                        <div class="form-group">
+                            <div id="recaptcha-container"></div>
+                            <span class="error-message" id="recaptcha-error"></span>
+                        </div>
+                        
+                        <!-- Submit Button -->
+                        <div class="form-actions">
+                            <button type="submit" id="submitBtn" class="submit-btn">
+                                <span class="btn-text">Invia Iscrizione</span>
+                                <span class="btn-loader" style="display: none;">⏳</span>
+                            </button>
+                        </div>
+                        
+                        <!-- Messaggio di successo/errore -->
+                        <div id="formMessage" class="form-message" style="display: none;"></div>
+                    </form>
+                </div>
+                
+                <!-- Informazioni Contatto -->
+                <div class="contatti-info fade-in">
+                    <h3>Contatti</h3>
+                    <p>Per maggiori informazioni:</p>
+                    <div class="contatti-list">
+                        <div class="contatto-item">
+                            <span class="contatto-label">Email</span>
+                            <a href="mailto:info@foggianonelmondo.it">info@foggianonelmondo.it</a>
+                        </div>
+                        <div class="contatto-item">
+                            <span class="contatto-label">Telefono</span>
+                            <a href="tel:+393331234567">+39 333 1234567</a>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -521,5 +605,40 @@
     <script src="../js/analytics/analytics.js" async defer></script>
     <!-- reCAPTCHA -->
     <script src="https://www.google.com/recaptcha/api.js" async defer></script>
+    <script>
+        // Accordion FAQ Info
+        document.querySelectorAll('.info-accordion-header').forEach(header => {
+            header.addEventListener('click', function() {
+                const item = this.parentElement;
+                const wasActive = item.classList.contains('active');
+                
+                // Chiudi tutti gli altri
+                document.querySelectorAll('.info-accordion-item').forEach(i => {
+                    i.classList.remove('active');
+                });
+                
+                // Toggle corrente
+                if (!wasActive) {
+                    item.classList.add('active');
+                }
+            });
+        });
+        
+        // Countdown per chiusura iscrizioni
+        function updateRegistrationCountdown() {
+            const deadline = new Date('2026-05-31T23:59:59');
+            const now = new Date();
+            const diff = deadline - now;
+            
+            if (diff > 0) {
+                const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+                const el = document.getElementById('regDays');
+                if (el) el.textContent = days;
+            }
+        }
+        
+        updateRegistrationCountdown();
+        setInterval(updateRegistrationCountdown, 60000); // Aggiorna ogni minuto
+    </script>
 </body>
 </html>
