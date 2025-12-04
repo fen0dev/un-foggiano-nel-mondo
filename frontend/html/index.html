@@ -397,6 +397,12 @@
                         <!-- CSRF Token (verrà generato dal backend) -->
                         <input type="hidden" id="csrfToken" name="csrfToken">
                         
+                        <!-- 🔒 Honeypot Anti-Bot (nascosto) -->
+                        <div class="hp-trap" aria-hidden="true" tabindex="-1">
+                            <label for="website">Leave empty</label>
+                            <input type="text" id="website" name="website" tabindex="-1" autocomplete="off">
+                        </div>
+                        
                         <!-- Informazioni Squadra -->
                         <div class="form-section">
                             <h4 class="section-header">Informazioni Squadra</h4>
@@ -579,6 +585,16 @@
                 <div class="footer-brand">
                     <h3>Un Foggiano nel Mondo</h3>
                     <p>Torneo Internazionale di Calcio Over 55</p>
+
+                    <!-- social links -->
+                     <div class="footer-social">
+                        <a href="https://facebook.com/foggianonelmondo" target="_blank" rel="noopener noreferrer" class="social-link facebook" aria-label="Seguici su Facebook">
+                            <svg class="social-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M24 12C24 5.37258 18.6274 0 12 0C5.37258 0 0 5.37258 0 12C0 17.9895 4.3882 22.954 10.125 23.8542V15.4688H7.07812V12H10.125V9.35625C10.125 6.34875 11.9166 4.6875 14.6576 4.6875C15.9701 4.6875 17.3438 4.92188 17.3438 4.92188V7.875H15.8306C14.34 7.875 13.875 8.80008 13.875 9.75V12H17.2031L16.6711 15.4688H13.875V23.8542C19.6118 22.954 24 17.9895 24 12Z" fill="currentColor"/>
+                            </svg>
+                            <span class="social-text">Seguici su Facebook</span>
+                        </a>
+                     </div>
                 </div>
                 <div class="footer-links">
                     <h4>Link Utili</h4>

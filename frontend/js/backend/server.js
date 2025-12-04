@@ -22,6 +22,33 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 
 // ==========================================
+// SECURITY CONFIGURATION
+// ==========================================
+const SECURITY_CONFIG = {
+    // Admin key (usa variabile d'ambiente in produzione!)
+    ADMIN_KEY: process.env.ADMIN_KEY || 'foggiano2026',
+    
+    // IP Blacklist settings
+    IP_BLOCK_DURATION_MINUTES: 30,
+    MAX_SUSPICIOUS_ATTEMPTS: 5,
+    
+    // Honeypot field name
+    HONEYPOT_FIELD: 'website',
+    
+    // Enable security logging
+    ENABLE_SECURITY_LOGS: true
+};
+
+// Hash della chiave admin per confronto sicuro
+const ADMIN_KEY_HASH = crypto.createHash('sha256')
+    .update(SECURITY_CONFIG.ADMIN_KEY)
+    .digest('hex');
+
+// Storage per IP sospetti (in produzione usa Redis)
+const suspiciousIPs = new Map();
+const ipAttempts = new Map();
+
+// ==========================================
 // CRON JOBS
 // ==========================================
 
@@ -40,6 +67,29 @@ cron.schedule('0 * * * *', () => {
     const cleaned = db.cleanupRateLimits();
     if (cleaned > 0) {
         console.log(`🧹 Puliti ${cleaned} rate limits scaduti`);
+    }
+});
+
+// Pulizia IP bloccati ogni 15 minuti
+cron.schedule('*/15 * * * *', () => {
+    const now = Date.now();
+    let cleaned = 0;
+    
+    suspiciousIPs.forEach((record, ip) => {
+        if (record.blockedUntil && now > record.blockedUntil) {
+            suspiciousIPs.delete(ip);
+            cleaned++;
+        }
+    });
+    
+    ipAttempts.forEach((record, ip) => {
+        if (now - record.lastAttempt > 3600000) { // 1 ora
+            ipAttempts.delete(ip);
+        }
+    });
+    
+    if (cleaned > 0) {
+        console.log(`🔓 Sbloccati ${cleaned} IP`);
     }
 });
 
@@ -85,6 +135,28 @@ app.use(cors({
 app.use(express.json({ limit: '10kb' }));
 app.use(express.urlencoded({ extended: true, limit: '10kb' }));
 app.use(cookieParser());
+
+// Middleware di sicurezza
+app.use((req, res, next) => {
+    // Previene caching di dati sensibili
+    if (req.path.startsWith('/api/')) {
+        res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+        res.setHeader('Pragma', 'no-cache');
+        res.setHeader('Expires', '0');
+        res.setHeader('Surrogate-Control', 'no-store');
+    }
+    
+    // Headers sicurezza aggiuntivi
+    res.setHeader('X-Content-Type-Options', 'nosniff');
+    res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
+    res.setHeader('Permissions-Policy', 'geolocation=(), microphone=(), camera=(), payment=()');
+    res.setHeader('X-DNS-Prefetch-Control', 'off');
+    
+    next();
+});
+
+// IP Block Check (prima di tutto)
+app.use(ipBlockMiddleware);
 
 // ==========================================
 // SERVIRE FILE STATICI
@@ -151,6 +223,182 @@ function generateAnonymousId(ip, userAgent) {
 }
 
 // ==========================================
+// SECURITY UTILITIES
+// ==========================================
+
+/**
+ * Valida la chiave admin in modo sicuro (timing-safe)
+ */
+function validateAdminKey(key) {
+    if (!key || typeof key !== 'string') return false;
+    
+    try {
+        const keyHash = crypto.createHash('sha256').update(key).digest('hex');
+        return crypto.timingSafeEqual(
+            Buffer.from(keyHash, 'hex'),
+            Buffer.from(ADMIN_KEY_HASH, 'hex')
+        );
+    } catch (error) {
+        return false;
+    }
+}
+
+/**
+ * Registra attività sospetta
+ */
+function logSuspiciousActivity(req, reason, severity = 'warning') {
+    if (!SECURITY_CONFIG.ENABLE_SECURITY_LOGS) return;
+    
+    const logData = {
+        timestamp: new Date().toISOString(),
+        ip: req.ip || req.connection?.remoteAddress || 'unknown',
+        userAgent: req.get('User-Agent')?.substring(0, 200) || 'unknown',
+        path: req.path,
+        method: req.method,
+        reason: reason,
+        severity: severity
+    };
+    
+    const icon = severity === 'critical' ? '🚨' : severity === 'warning' ? '⚠️' : 'ℹ️';
+    console.warn(`${icon} SECURITY [${severity.toUpperCase()}]:`, JSON.stringify(logData));
+    
+    // Salva nel database
+    try {
+        db.logAdminAction({
+            action: 'security_event',
+            entityType: 'security',
+            entityId: logData.ip,
+            ipAddress: logData.ip,
+            newValue: JSON.stringify({
+                reason: reason,
+                severity: severity,
+                userAgent: logData.userAgent,
+                path: logData.path
+            })
+        });
+    } catch (error) {
+        console.error('Errore logging security event:', error);
+    }
+}
+
+/**
+ * Incrementa contatore tentativi sospetti per IP
+ */
+function incrementSuspiciousAttempts(ip) {
+    const record = ipAttempts.get(ip) || { count: 0, lastAttempt: 0 };
+    record.count++;
+    record.lastAttempt = Date.now();
+    ipAttempts.set(ip, record);
+    
+    // Blocca IP se troppi tentativi
+    if (record.count >= SECURITY_CONFIG.MAX_SUSPICIOUS_ATTEMPTS) {
+        blockIP(ip, SECURITY_CONFIG.IP_BLOCK_DURATION_MINUTES);
+        return true; // IP bloccato
+    }
+    return false;
+}
+
+/**
+ * Blocca un IP per un periodo di tempo
+ */
+function blockIP(ip, minutes = 30) {
+    suspiciousIPs.set(ip, {
+        blocked: true,
+        blockedAt: Date.now(),
+        blockedUntil: Date.now() + (minutes * 60 * 1000),
+        reason: 'Troppi tentativi sospetti'
+    });
+    
+    console.warn(`🚫 IP BLOCCATO: ${ip} per ${minutes} minuti`);
+    
+    // Log nel database
+    try {
+        db.logAdminAction({
+            action: 'ip_blocked',
+            entityType: 'security',
+            entityId: ip,
+            ipAddress: ip,
+            newValue: JSON.stringify({ blockedMinutes: minutes })
+        });
+    } catch (error) {
+        console.error('Errore logging IP block:', error);
+    }
+}
+
+/**
+ * Controlla se IP è bloccato
+ */
+function isIPBlocked(ip) {
+    const record = suspiciousIPs.get(ip);
+    if (!record || !record.blocked) return false;
+    
+    if (Date.now() > record.blockedUntil) {
+        suspiciousIPs.delete(ip);
+        return false;
+    }
+    
+    return true;
+}
+
+/**
+ * Verifica honeypot (anti-bot)
+ */
+function checkHoneypot(req) {
+    const honeypotValue = req.body[SECURITY_CONFIG.HONEYPOT_FIELD];
+    
+    if (honeypotValue && honeypotValue.length > 0) {
+        logSuspiciousActivity(req, 'Honeypot triggered - bot detected', 'warning');
+        return false; // Bot rilevato
+    }
+    
+    return true; // OK, probabilmente umano
+}
+
+/**
+ * Middleware per controllare IP bloccati
+ */
+function ipBlockMiddleware(req, res, next) {
+    const ip = req.ip || req.connection?.remoteAddress;
+    
+    if (isIPBlocked(ip)) {
+        logSuspiciousActivity(req, 'Blocked IP attempted access', 'info');
+        return res.status(429).json({
+            success: false,
+            message: 'Accesso temporaneamente sospeso. Riprova più tardi.'
+        });
+    }
+    
+    next();
+}
+
+/**
+ * Middleware per validare admin key
+ */
+function adminAuthMiddleware(req, res, next) {
+    const adminKey = req.query.key || req.body.key || req.headers['x-admin-key'];
+    
+    if (!validateAdminKey(adminKey)) {
+        const ip = req.ip || req.connection?.remoteAddress;
+        logSuspiciousActivity(req, 'Invalid admin key attempt', 'warning');
+        
+        // Incrementa tentativi sospetti
+        if (incrementSuspiciousAttempts(ip)) {
+            return res.status(429).json({
+                success: false,
+                message: 'Troppi tentativi. Accesso bloccato temporaneamente.'
+            });
+        }
+        
+        return res.status(401).json({
+            success: false,
+            message: 'Non autorizzato'
+        });
+    }
+    
+    next();
+}
+
+// ==========================================
 // ENDPOINT: CSRF TOKEN
 // ==========================================
 app.get('/api/csrf-token', csrfProtection, (req, res) => {
@@ -207,13 +455,7 @@ app.get('/regolamento.html', (req, res) => {
 // ==========================================
 // ENDPOINT: LOG ADMIN
 // ==========================================
-app.get('/api/admin/logs', (req, res) => {
-    const adminKey = req.query.key;
-    
-    if (adminKey !== process.env.ADMIN_KEY && adminKey !== 'foggiano2026') {
-        return res.status(401).json({ success: false, message: 'Non autorizzato' });
-    }
-    
+app.get('/api/admin/logs', adminAuthMiddleware, (req, res) => {
     const limit = parseInt(req.query.limit) || 100;
     const logs = db.getAdminLogs(limit);
     
@@ -222,6 +464,81 @@ app.get('/api/admin/logs', (req, res) => {
         count: logs.length,
         data: logs
     });
+});
+
+// ==========================================
+// ENDPOINT: SECURITY STATUS (Admin)
+// ==========================================
+app.get('/api/admin/security', adminAuthMiddleware, (req, res) => {
+    const blockedIPs = [];
+
+    suspiciousIPs.forEach((record, ip) => {
+        if (record.blocked && Date.now() < record.blockedUntil) {
+            blockedIPs.push({
+                ip: ip,
+                blockedAt: new Date(record.blockedAt).toISOString(),
+                blockedUntil: new Date(record.blockedUntil).toISOString(),
+                remainingMinutes: Math.ceil((record.blockedUntil - Date.now()) / 60000)
+            });
+        } 
+    });
+
+    const suspiciousAttempts = [];
+    ipAttempts.forEach((record, ip) => {
+        suspiciousAttempts.push({
+            ip: ip,
+            attempts: record.count,
+            lastAttempt: new Date(record.lastAttempt).toISOString()
+        });
+    });
+
+    // Recupera log di sicurezza recenti
+    const securityLogs = db.db.prepare(`
+        SELECT * FROM admin_logs 
+        WHERE action IN ('security_event', 'ip_blocked', 'suspicious_activity')
+        ORDER BY timestamp DESC 
+        LIMIT 50
+    `).all();
+    
+    res.json({
+        success: true,
+        data: {
+            blockedIPs: blockedIPs,
+            suspiciousAttempts: suspiciousAttempts.sort((a, b) => b.attempts - a.attempts),
+            recentSecurityEvents: securityLogs,
+            config: {
+                blockDurationMinutes: SECURITY_CONFIG.IP_BLOCK_DURATION_MINUTES,
+                maxAttempts: SECURITY_CONFIG.MAX_SUSPICIOUS_ATTEMPTS
+            }
+        }
+    });
+});
+
+// Sblocca IP manualmente
+app.post('/api/admin/security/unblock', adminAuthMiddleware, (req, res) => {
+    const { ip } = req.body;
+    
+    if (!ip) {
+        return res.status(400).json({ success: false, message: 'IP richiesto' });
+    }
+    
+    if (suspiciousIPs.has(ip)) {
+        suspiciousIPs.delete(ip);
+        ipAttempts.delete(ip);
+        
+        db.logAdminAction({
+            action: 'ip_unblocked',
+            entityType: 'security',
+            entityId: ip,
+            adminKey: req.query.key?.substring(0, 8) + '...',
+            ipAddress: req.ip
+        });
+        
+        console.log(`✅ IP sbloccato manualmente: ${ip}`);
+        return res.json({ success: true, message: `IP ${ip} sbloccato` });
+    }
+    
+    res.json({ success: true, message: 'IP non era bloccato' });
 });
 
 // ==========================================
@@ -317,13 +634,7 @@ app.post('/api/analytics/form', analyticsLimiter, (req, res) => {
 });
 
 // Dashboard analytics (Admin)
-app.get('/api/analytics/dashboard', (req, res) => {
-    const adminKey = req.query.key;
-    
-    if (adminKey !== process.env.ADMIN_KEY && adminKey !== 'foggiano2026') {
-        return res.status(401).json({ success: false, message: 'Non autorizzato' });
-    }
-    
+app.get('/api/analytics/dashboard', adminAuthMiddleware, (req, res) => {
     const days = parseInt(req.query.days) || 30;
     const analyticsStats = db.getAnalyticsStats(days);
     const iscrizioniStats = db.getIscrizioniStats();
@@ -342,20 +653,14 @@ app.get('/api/analytics/dashboard', (req, res) => {
 // ==========================================
 // ENDPOINT: BACKUP MANUALE
 // ==========================================
-app.post('/api/admin/backup', (req, res) => {
-    const adminKey = req.query.key;
-    
-    if (adminKey !== process.env.ADMIN_KEY && adminKey !== 'foggiano2026') {
-        return res.status(401).json({ success: false, message: 'Non autorizzato' });
-    }
-    
+app.post('/api/admin/backup', adminAuthMiddleware, (req, res) => {
     try {
         const backupPath = db.backup();
         
         db.logAdminAction({
             action: 'backup_created',
             entityType: 'database',
-            adminKey,
+            adminKey: req.query.key,
             ipAddress: req.ip
         });
         
@@ -473,6 +778,15 @@ app.post('/api/iscrizione',
     validationRules,
     async (req, res) => {
         try {
+            // 🔒 HONEYPOT CHECK - Anti-bot
+            if (!checkHoneypot(req)) {
+                // Non rivelare che abbiamo rilevato un bot
+                return res.status(400).json({
+                    success: false,
+                    message: 'Si è verificato un errore. Riprova.'
+                });
+            }
+            
             const errors = validationResult(req);
             if (!errors.isEmpty()) {
                 // Traccia errori per analytics
@@ -592,13 +906,7 @@ app.get('/api/galleria', (req, res) => {
     });
 });
 
-app.post('/api/admin/galleria', (req, res) => {
-    const adminKey = req.query.key;
-    
-    if (adminKey !== process.env.ADMIN_KEY && adminKey !== 'foggiano2026') {
-        return res.status(401).json({ success: false, message: 'Non autorizzato' });
-    }
-    
+app.post('/api/admin/galleria', adminAuthMiddleware, (req, res) => {
     // TODO: Implementare upload foto
     res.json({ success: true, message: 'Foto caricata' });
 });
@@ -606,36 +914,23 @@ app.post('/api/admin/galleria', (req, res) => {
 // ==========================================
 // ENDPOINT: LISTA ISCRIZIONI (Admin)
 // ==========================================
-app.get('/api/iscrizioni', (req, res) => {
-    const adminKey = req.query.key;
-    
-    if (adminKey !== process.env.ADMIN_KEY && adminKey !== 'foggiano2026') {
-        return res.status(401).json({ success: false, message: 'Non autorizzato' });
+app.get('/api/iscrizioni', adminAuthMiddleware, (req, res) => {
+    // Il middleware già verifica l'autenticazione
+    try {
+        const iscrizioni = db.getAllIscrizioni();
+        res.json({
+            success: true,
+            data: iscrizioni,
+            count: iscrizioni.length
+        });
+    } catch (error) {
+        console.error('Errore recupero iscrizioni:', error);
+        res.status(500).json({ success: false, message: 'Errore server' });
     }
-    
-    const status = req.query.status;
-    const iscrizioni = status 
-        ? db.getIscrizioniByStatus(status)
-        : db.getAllIscrizioni();
-    
-    const stats = db.getIscrizioniStats();
-    
-    res.json({
-        success: true,
-        count: iscrizioni.length,
-        stats: stats,
-        data: iscrizioni
-    });
 });
 
 // Aggiorna status iscrizione + email
-app.patch('/api/iscrizioni/:id', (req, res) => {
-    const adminKey = req.query.key;
-    
-    if (adminKey !== process.env.ADMIN_KEY && adminKey !== 'foggiano2026') {
-        return res.status(401).json({ success: false, message: 'Non autorizzato' });
-    }
-    
+app.patch('/api/iscrizioni/:id', adminAuthMiddleware, (req, res) => {
     const { id } = req.params;
     const { status } = req.body;
     
@@ -648,7 +943,7 @@ app.patch('/api/iscrizioni/:id', (req, res) => {
         return res.status(404).json({ success: false, message: 'Iscrizione non trovata' });
     }
     
-    const updated = db.updateIscrizioneStatus(id, status, adminKey);
+    const updated = db.updateIscrizioneStatus(id, status, req.query.key);
     
     if (updated) {
         // Invia email di notifica cambio status
@@ -668,7 +963,7 @@ app.patch('/api/iscrizioni/:id', (req, res) => {
             entityId: id,
             oldValue: { status: oldIscrizione.status },
             newValue: { status },
-            adminKey,
+            adminKey: req.query.key,
             ipAddress: req.ip
         });
         
@@ -679,13 +974,7 @@ app.patch('/api/iscrizioni/:id', (req, res) => {
 });
 
 // Elimina iscrizione
-app.delete('/api/iscrizioni/:id', (req, res) => {
-    const adminKey = req.query.key;
-    
-    if (adminKey !== process.env.ADMIN_KEY && adminKey !== 'foggiano2026') {
-        return res.status(401).json({ success: false, message: 'Non autorizzato' });
-    }
-    
+app.delete('/api/iscrizioni/:id', adminAuthMiddleware, (req, res) => {
     const { id } = req.params;
     const oldIscrizione = db.getIscrizioneById(id);
     
@@ -701,7 +990,7 @@ app.delete('/api/iscrizioni/:id', (req, res) => {
             entityType: 'iscrizione',
             entityId: id,
             oldValue: oldIscrizione,
-            adminKey,
+            adminKey: req.query.key,
             ipAddress: req.ip
         });
         
@@ -714,13 +1003,7 @@ app.delete('/api/iscrizioni/:id', (req, res) => {
 // ==========================================
 // ENDPOINT: STATISTICHE DATABASE
 // ==========================================
-app.get('/api/admin/stats', (req, res) => {
-    const adminKey = req.query.key;
-    
-    if (adminKey !== process.env.ADMIN_KEY && adminKey !== 'foggiano2026') {
-        return res.status(401).json({ success: false, message: 'Non autorizzato' });
-    }
-    
+app.get('/api/admin/stats', adminAuthMiddleware, (req, res) => {
     const dbStats = db.getStats();
     const iscrizioniStats = db.getIscrizioniStats();
     
