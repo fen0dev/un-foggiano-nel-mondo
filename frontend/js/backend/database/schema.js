@@ -130,6 +130,18 @@ const SCHEMA = {
                 ip_address TEXT,
                 timestamp TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
             )
+        `,
+        
+        // Tabella IP bloccati (persistente)
+        ip_blocks: `
+            CREATE TABLE IF NOT EXISTS ip_blocks (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                ip TEXT NOT NULL UNIQUE,
+                blocked_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                blocked_until TEXT NOT NULL,
+                reason TEXT,
+                attempts INTEGER DEFAULT 1
+            )
         `
     },
     
@@ -151,7 +163,10 @@ const SCHEMA = {
         'CREATE INDEX IF NOT EXISTS idx_sessions_first_seen ON analytics_sessions(first_seen)',
         
         'CREATE INDEX IF NOT EXISTS idx_rate_limits_key ON rate_limits(key)',
-        'CREATE INDEX IF NOT EXISTS idx_rate_limits_window ON rate_limits(window_start)'
+        'CREATE INDEX IF NOT EXISTS idx_rate_limits_window ON rate_limits(window_start)',
+        
+        'CREATE INDEX IF NOT EXISTS idx_ip_blocks_ip ON ip_blocks(ip)',
+        'CREATE INDEX IF NOT EXISTS idx_ip_blocks_until ON ip_blocks(blocked_until)'
     ],
     
     triggers: [

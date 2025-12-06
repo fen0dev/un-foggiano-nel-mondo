@@ -25,8 +25,10 @@ const PORT = process.env.PORT || 3000;
 // SECURITY CONFIGURATION
 // ==========================================
 const SECURITY_CONFIG = {
-    // Admin key (usa variabile d'ambiente in produzione!)
-    ADMIN_KEY: process.env.ADMIN_KEY || 'foggiano2026',
+    // Admin key - OBBLIGATORIA in produzione via variabile d'ambiente
+    ADMIN_KEY: process.env.NODE_ENV === 'production' 
+        ? (process.env.ADMIN_KEY || (() => { throw new Error('ADMIN_KEY richiesta in produzione!'); })())
+        : (process.env.ADMIN_KEY || 'dev_only_foggiano2026'),
     
     // IP Blacklist settings
     IP_BLOCK_DURATION_MINUTES: 30,
@@ -44,8 +46,7 @@ const ADMIN_KEY_HASH = crypto.createHash('sha256')
     .update(SECURITY_CONFIG.ADMIN_KEY)
     .digest('hex');
 
-// Storage per IP sospetti (in produzione usa Redis)
-const suspiciousIPs = new Map();
+// Storage per tentativi IP in memoria (per conteggio veloce, il blocco è persistente nel DB)
 const ipAttempts = new Map();
 
 // ==========================================
@@ -70,26 +71,21 @@ cron.schedule('0 * * * *', () => {
     }
 });
 
-// Pulizia IP bloccati ogni 15 minuti
+// Pulizia IP bloccati ogni 15 minuti (ora persistente nel DB)
 cron.schedule('*/15 * * * *', () => {
     const now = Date.now();
-    let cleaned = 0;
     
-    suspiciousIPs.forEach((record, ip) => {
-        if (record.blockedUntil && now > record.blockedUntil) {
-            suspiciousIPs.delete(ip);
-            cleaned++;
-        }
-    });
-    
+    // Pulisci tentativi vecchi dalla memoria
     ipAttempts.forEach((record, ip) => {
         if (now - record.lastAttempt > 3600000) { // 1 ora
             ipAttempts.delete(ip);
         }
     });
     
+    // Pulisci blocchi scaduti dal database
+    const cleaned = db.cleanupExpiredIPBlocks();
     if (cleaned > 0) {
-        console.log(`🔓 Sbloccati ${cleaned} IP`);
+        console.log(`🔓 Rimossi ${cleaned} blocchi IP scaduti dal database`);
     }
 });
 
@@ -126,7 +122,14 @@ app.use(cors({
         if (allowedOrigins.includes(origin)) {
             callback(null, true);
         } else {
-            callback(null, true);
+            // In produzione, rifiuta origin non autorizzati
+            if (process.env.NODE_ENV === 'production') {
+                callback(new Error('Origin non autorizzato'));
+            } else {
+                // In sviluppo, permetti comunque (con warning)
+                console.warn(`⚠️ CORS: Origin non in whitelist: ${origin}`);
+                callback(null, true);
+            }
         }
     },
     credentials: true
@@ -299,17 +302,11 @@ function incrementSuspiciousAttempts(ip) {
 }
 
 /**
- * Blocca un IP per un periodo di tempo
+ * Blocca un IP per un periodo di tempo (persistente nel DB)
  */
-function blockIP(ip, minutes = 30) {
-    suspiciousIPs.set(ip, {
-        blocked: true,
-        blockedAt: Date.now(),
-        blockedUntil: Date.now() + (minutes * 60 * 1000),
-        reason: 'Troppi tentativi sospetti'
-    });
-    
-    console.warn(`🚫 IP BLOCCATO: ${ip} per ${minutes} minuti`);
+function blockIP(ip, minutes = 30, reason = 'Troppi tentativi sospetti') {
+    // Blocco persistente nel database
+    db.blockIP(ip, minutes, reason);
     
     // Log nel database
     try {
@@ -318,7 +315,7 @@ function blockIP(ip, minutes = 30) {
             entityType: 'security',
             entityId: ip,
             ipAddress: ip,
-            newValue: JSON.stringify({ blockedMinutes: minutes })
+            newValue: JSON.stringify({ blockedMinutes: minutes, reason })
         });
     } catch (error) {
         console.error('Errore logging IP block:', error);
@@ -326,18 +323,11 @@ function blockIP(ip, minutes = 30) {
 }
 
 /**
- * Controlla se IP è bloccato
+ * Controlla se IP è bloccato (dal database)
  */
 function isIPBlocked(ip) {
-    const record = suspiciousIPs.get(ip);
-    if (!record || !record.blocked) return false;
-    
-    if (Date.now() > record.blockedUntil) {
-        suspiciousIPs.delete(ip);
-        return false;
-    }
-    
-    return true;
+    const result = db.isIPBlocked(ip);
+    return result.blocked;
 }
 
 /**
@@ -456,7 +446,7 @@ app.get('/regolamento.html', (req, res) => {
 // ENDPOINT: LOG ADMIN
 // ==========================================
 app.get('/api/admin/logs', adminAuthMiddleware, (req, res) => {
-    const limit = parseInt(req.query.limit) || 100;
+    const limit = Math.min(Math.max(parseInt(req.query.limit) || 100, 1), 500); // Min 1, Max 500
     const logs = db.getAdminLogs(limit);
     
     res.json({
@@ -470,18 +460,17 @@ app.get('/api/admin/logs', adminAuthMiddleware, (req, res) => {
 // ENDPOINT: SECURITY STATUS (Admin)
 // ==========================================
 app.get('/api/admin/security', adminAuthMiddleware, (req, res) => {
-    const blockedIPs = [];
-
-    suspiciousIPs.forEach((record, ip) => {
-        if (record.blocked && Date.now() < record.blockedUntil) {
-            blockedIPs.push({
-                ip: ip,
-                blockedAt: new Date(record.blockedAt).toISOString(),
-                blockedUntil: new Date(record.blockedUntil).toISOString(),
-                remainingMinutes: Math.ceil((record.blockedUntil - Date.now()) / 60000)
-            });
-        } 
-    });
+    // Ottieni blocchi attivi dal database (persistenti)
+    const dbBlocks = db.getActiveIPBlocks();
+    const blockedIPs = dbBlocks.map(record => ({
+        ip: record.ip,
+        blockedAt: record.blocked_at,
+        blockedUntil: record.blocked_until,
+        remainingMinutes: Math.ceil((new Date(record.blocked_until) - Date.now()) / 60000),
+        reason: record.reason,
+        attempts: record.attempts,
+        persistent: true
+    }));
 
     const suspiciousAttempts = [];
     ipAttempts.forEach((record, ip) => {
@@ -514,7 +503,7 @@ app.get('/api/admin/security', adminAuthMiddleware, (req, res) => {
     });
 });
 
-// Sblocca IP manualmente
+// Sblocca IP manualmente (dal database)
 app.post('/api/admin/security/unblock', adminAuthMiddleware, (req, res) => {
     const { ip } = req.body;
     
@@ -522,10 +511,10 @@ app.post('/api/admin/security/unblock', adminAuthMiddleware, (req, res) => {
         return res.status(400).json({ success: false, message: 'IP richiesto' });
     }
     
-    if (suspiciousIPs.has(ip)) {
-        suspiciousIPs.delete(ip);
-        ipAttempts.delete(ip);
-        
+    const wasBlocked = db.unblockIP(ip);
+    ipAttempts.delete(ip); // Rimuovi anche i tentativi dalla memoria
+    
+    if (wasBlocked) {
         db.logAdminAction({
             action: 'ip_unblocked',
             entityType: 'security',
@@ -685,8 +674,8 @@ const validationRules = [
     body('nomeSquadra')
         .trim()
         .isLength({ min: 3, max: 50 })
-        .matches(/^[A-Za-z0-9\s\-_]+$/)
-        .withMessage('Nome squadra non valido')
+        .matches(/^[A-Za-zÀ-ÿ0-9\s\-_'.]+$/)
+        .withMessage('Nome squadra non valido (lettere, numeri, spazi, trattini)')
         .customSanitizer(sanitizeInput),
     
     body('cittaSquadra')
@@ -1050,18 +1039,55 @@ app.use((err, req, res, next) => {
 // ==========================================
 // AVVIO SERVER
 // ==========================================
-app.listen(PORT, () => {
+const server = app.listen(PORT, () => {
     console.log(`
 🚀 Server "Un Foggiano nel Mondo" avviato!
 
 📍 URL: http://localhost:${PORT}
 
-📊 Analytics: http://localhost:${PORT}/api/analytics/dashboard?key=foggiano2026
-
-🏆 Iscrizioni: http://localhost:${PORT}/api/iscrizioni?key=foggiano2026
+🔐 Admin: http://localhost:${PORT}/admin
 
 ❤️  Health: http://localhost:${PORT}/health
 
 💾 Database: ${db.getStats().path}
+
+${process.env.NODE_ENV !== 'production' ? '⚠️  ATTENZIONE: Modalità sviluppo attiva' : '✅ Modalità produzione'}
     `);
+});
+
+// ==========================================
+// GRACEFUL SHUTDOWN
+// ==========================================
+const gracefulShutdown = (signal) => {
+    console.log(`\n🛑 ${signal} ricevuto. Chiusura in corso...`);
+    
+    server.close(() => {
+        console.log('📡 Server HTTP chiuso');
+        
+        try {
+            db.close();
+            console.log('💾 Database chiuso');
+        } catch (err) {
+            console.error('❌ Errore chiusura database:', err);
+        }
+        
+        console.log('✅ Shutdown completato');
+        process.exit(0);
+    });
+    
+    // Force exit dopo 10 secondi se qualcosa blocca
+    setTimeout(() => {
+        console.error('⚠️ Timeout shutdown, chiusura forzata');
+        process.exit(1);
+    }, 10000);
+};
+
+process.on('SIGTERM', () => gracefulShutdown('SIGTERM'));
+process.on('SIGINT', () => gracefulShutdown('SIGINT'));
+process.on('uncaughtException', (err) => {
+    console.error('❌ Uncaught Exception:', err);
+    gracefulShutdown('UNCAUGHT_EXCEPTION');
+});
+process.on('unhandledRejection', (reason, promise) => {
+    console.error('❌ Unhandled Rejection:', reason);
 });

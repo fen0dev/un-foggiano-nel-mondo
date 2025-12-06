@@ -5,7 +5,8 @@
 
 class AdminDashboard {
     constructor() {
-        this.adminKey = localStorage.getItem('adminKey') || '';
+        // Usa sessionStorage per sicurezza (si cancella alla chiusura del browser)
+        this.adminKey = sessionStorage.getItem('adminKey') || '';
         this.currentSection = 'overview';
         this.iscrizioni = [];
         this.analytics = null;
@@ -17,6 +18,8 @@ class AdminDashboard {
             status: '',
             country: ''
         };
+        this.searchDebounceTimer = null;
+        this.apiTimeout = 15000; // 15 secondi timeout
         
         this.init();
     }
@@ -72,10 +75,17 @@ class AdminDashboard {
             this.exportCSV();
         });
 
-        // Filters
+        // Filters (con debounce per la ricerca)
         document.getElementById('searchInput').addEventListener('input', (e) => {
-            this.filters.search = e.target.value.toLowerCase();
-            this.renderIscrizioni();
+            const value = e.target.value.toLowerCase();
+            
+            // Debounce: aspetta 300ms prima di eseguire la ricerca
+            clearTimeout(this.searchDebounceTimer);
+            this.searchDebounceTimer = setTimeout(() => {
+                this.filters.search = value;
+                this.currentPage = 1; // Reset alla prima pagina
+                this.renderIscrizioni();
+            }, 300);
         });
 
         document.getElementById('statusFilter').addEventListener('change', (e) => {
@@ -160,7 +170,7 @@ class AdminDashboard {
             
             if (response.success) {
                 this.adminKey = key;
-                localStorage.setItem('adminKey', key);
+                sessionStorage.setItem('adminKey', key);
                 this.showDashboard();
                 this.loadAllData();
             } else {
@@ -188,7 +198,7 @@ class AdminDashboard {
 
     handleLogout() {
         this.adminKey = '';
-        localStorage.removeItem('adminKey');
+        sessionStorage.removeItem('adminKey');
         document.getElementById('loginScreen').style.display = 'flex';
         document.getElementById('dashboard').style.display = 'none';
         document.getElementById('adminKey').value = '';
@@ -201,8 +211,32 @@ class AdminDashboard {
     }
 
     // ==========================================
-    // API CALLS
+    // API CALLS (con timeout)
     // ==========================================
+    
+    /**
+     * Wrapper fetch con timeout
+     */
+    async fetchWithTimeout(url, options = {}) {
+        const controller = new AbortController();
+        const timeout = setTimeout(() => controller.abort(), this.apiTimeout);
+        
+        try {
+            const response = await fetch(url, {
+                ...options,
+                signal: controller.signal
+            });
+            return response;
+        } catch (error) {
+            if (error.name === 'AbortError') {
+                throw new Error('Timeout: la richiesta ha impiegato troppo tempo');
+            }
+            throw error;
+        } finally {
+            clearTimeout(timeout);
+        }
+    }
+
     async apiCall(endpoint, params = {}) {
         const url = new URL(endpoint, window.location.origin);
         
@@ -210,7 +244,7 @@ class AdminDashboard {
             url.searchParams.set('key', params.key);
         }
         
-        const response = await fetch(url);
+        const response = await this.fetchWithTimeout(url);
         return response.json();
     }
 
@@ -218,7 +252,7 @@ class AdminDashboard {
         const url = new URL(endpoint, window.location.origin);
         url.searchParams.set('key', this.adminKey);
         
-        const response = await fetch(url, {
+        const response = await this.fetchWithTimeout(url, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(data)
@@ -230,7 +264,7 @@ class AdminDashboard {
         const url = new URL(endpoint, window.location.origin);
         url.searchParams.set('key', this.adminKey);
         
-        const response = await fetch(url, {
+        const response = await this.fetchWithTimeout(url, {
             method: 'PATCH',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(data)
@@ -242,7 +276,7 @@ class AdminDashboard {
         const url = new URL(endpoint, window.location.origin);
         url.searchParams.set('key', this.adminKey);
         
-        const response = await fetch(url, { method: 'DELETE' });
+        const response = await this.fetchWithTimeout(url, { method: 'DELETE' });
         return response.json();
     }
 
@@ -992,18 +1026,33 @@ class AdminDashboard {
             return;
         }
 
+        const ids = [...this.selectedIds];
+        const BATCH_SIZE = 5; // Esegui 5 richieste alla volta
         let successCount = 0;
-        for (const id of this.selectedIds) {
-            try {
-                const response = await this.apiPatch(`/api/iscrizioni/${id}`, { status });
-                if (response.success) successCount++;
-            } catch (error) {
-                console.error('Errore bulk update:', error);
-            }
+        let errorCount = 0;
+
+        // Elabora in batch paralleli
+        for (let i = 0; i < ids.length; i += BATCH_SIZE) {
+            const batch = ids.slice(i, i + BATCH_SIZE);
+            const results = await Promise.allSettled(
+                batch.map(id => this.apiPatch(`/api/iscrizioni/${id}`, { status }))
+            );
+            
+            results.forEach(result => {
+                if (result.status === 'fulfilled' && result.value.success) {
+                    successCount++;
+                } else {
+                    errorCount++;
+                }
+            });
         }
 
         this.selectedIds.clear();
-        this.showToast(`${successCount} iscrizioni aggiornate`, 'success');
+        if (errorCount > 0) {
+            this.showToast(`${successCount} aggiornate, ${errorCount} errori`, 'warning');
+        } else {
+            this.showToast(`${successCount} iscrizioni aggiornate`, 'success');
+        }
         await this.loadIscrizioni();
     }
 
@@ -1014,18 +1063,32 @@ class AdminDashboard {
             return;
         }
 
+        const ids = [...this.selectedIds];
+        const BATCH_SIZE = 5;
         let successCount = 0;
-        for (const id of this.selectedIds) {
-            try {
-                const response = await this.apiDelete(`/api/iscrizioni/${id}`);
-                if (response.success) successCount++;
-            } catch (error) {
-                console.error('Errore bulk delete:', error);
-            }
+        let errorCount = 0;
+
+        for (let i = 0; i < ids.length; i += BATCH_SIZE) {
+            const batch = ids.slice(i, i + BATCH_SIZE);
+            const results = await Promise.allSettled(
+                batch.map(id => this.apiDelete(`/api/iscrizioni/${id}`))
+            );
+            
+            results.forEach(result => {
+                if (result.status === 'fulfilled' && result.value.success) {
+                    successCount++;
+                } else {
+                    errorCount++;
+                }
+            });
         }
 
         this.selectedIds.clear();
-        this.showToast(`${successCount} iscrizioni eliminate`, 'success');
+        if (errorCount > 0) {
+            this.showToast(`${successCount} eliminate, ${errorCount} errori`, 'warning');
+        } else {
+            this.showToast(`${successCount} iscrizioni eliminate`, 'success');
+        }
         await this.loadIscrizioni();
     }
 

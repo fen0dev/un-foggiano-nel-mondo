@@ -192,6 +192,33 @@ class DatabaseManager {
             INSERT INTO admin_logs (action, entity_type, entity_id, old_value, new_value, admin_key, ip_address)
             VALUES (@action, @entity_type, @entity_id, @old_value, @new_value, @admin_key, @ip_address)
         `);
+
+        // IP Blocks
+        this.statements.getIPBlock = this.db.prepare(
+            'SELECT * FROM ip_blocks WHERE ip = ?'
+        );
+
+        this.statements.insertIPBlock = this.db.prepare(`
+            INSERT INTO ip_blocks (ip, blocked_until, reason, attempts)
+            VALUES (@ip, @blocked_until, @reason, @attempts)
+            ON CONFLICT(ip) DO UPDATE SET
+                blocked_at = CURRENT_TIMESTAMP,
+                blocked_until = @blocked_until,
+                reason = @reason,
+                attempts = attempts + 1
+        `);
+
+        this.statements.deleteIPBlock = this.db.prepare(
+            'DELETE FROM ip_blocks WHERE ip = ?'
+        );
+
+        this.statements.getActiveIPBlocks = this.db.prepare(
+            "SELECT * FROM ip_blocks WHERE datetime(blocked_until) > datetime('now')"
+        );
+
+        this.statements.cleanupExpiredIPBlocks = this.db.prepare(
+            "DELETE FROM ip_blocks WHERE datetime(blocked_until) < datetime('now')"
+        );
     }
 
     // ==========================================
@@ -627,6 +654,72 @@ class DatabaseManager {
     }
 
     // ==========================================
+    // IP BLOCKING (Persistente)
+    // ==========================================
+    
+    /**
+     * Controlla se un IP è bloccato
+     */
+    isIPBlocked(ip) {
+        const record = this.statements.getIPBlock.get(ip);
+        if (!record) return { blocked: false };
+        
+        const blockedUntil = new Date(record.blocked_until);
+        if (blockedUntil < new Date()) {
+            // Blocco scaduto, rimuovi
+            this.statements.deleteIPBlock.run(ip);
+            return { blocked: false };
+        }
+        
+        return {
+            blocked: true,
+            blockedUntil: record.blocked_until,
+            reason: record.reason,
+            attempts: record.attempts
+        };
+    }
+
+    /**
+     * Blocca un IP per un certo numero di minuti
+     */
+    blockIP(ip, minutes = 30, reason = 'Troppi tentativi sospetti') {
+        const blockedUntil = new Date(Date.now() + minutes * 60 * 1000).toISOString();
+        
+        this.statements.insertIPBlock.run({
+            ip,
+            blocked_until: blockedUntil,
+            reason,
+            attempts: 1
+        });
+        
+        console.warn(`🚫 IP BLOCCATO (DB): ${ip} per ${minutes} minuti`);
+        return true;
+    }
+
+    /**
+     * Sblocca un IP
+     */
+    unblockIP(ip) {
+        const result = this.statements.deleteIPBlock.run(ip);
+        return result.changes > 0;
+    }
+
+    /**
+     * Ottieni tutti gli IP attivamente bloccati
+     */
+    getActiveIPBlocks() {
+        return this.statements.getActiveIPBlocks.all();
+    }
+
+    /**
+     * Pulisci i blocchi IP scaduti
+     */
+    cleanupExpiredIPBlocks() {
+        const result = this.statements.cleanupExpiredIPBlocks.run();
+        return result.changes;
+    }
+
+    // ==========================================
     // BACKUP
     // ==========================================
     backup() {
@@ -680,14 +773,30 @@ class DatabaseManager {
 
     getStats() {
         const fileSize = fs.statSync(this.dbPath).size;
-        const tables = this.db.prepare(
-            "SELECT name FROM sqlite_master WHERE type='table'"
-        ).all();
+        
+        // Lista bianca delle tabelle conosciute per evitare SQL injection
+        const allowedTables = [
+            'iscrizioni', 
+            'analytics_pageviews', 
+            'analytics_events', 
+            'analytics_puzzle',
+            'analytics_form',
+            'analytics_sessions',
+            'rate_limits',
+            'config',
+            'admin_logs',
+            'ip_blocks'
+        ];
 
         const counts = {};
-        for (const table of tables) {
-            const result = this.db.prepare(`SELECT COUNT(*) as count FROM ${table.name}`).get();
-            counts[table.name] = result.count;
+        for (const tableName of allowedTables) {
+            try {
+                const result = this.db.prepare('SELECT COUNT(*) as count FROM ' + tableName).get();
+                counts[tableName] = result.count;
+            } catch (e) {
+                // Tabella non esiste ancora
+                counts[tableName] = 0;
+            }
         }
 
         return {

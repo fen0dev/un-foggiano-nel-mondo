@@ -12,7 +12,7 @@ const nodemailer = require('nodemailer');
 class EmailService {
     constructor(options = {}) {
         this.config = {
-            host: options.host || process.env.SMTP_HOST || 'smtp.gmail.com',
+            host: options.host || process.env.SMTP_HOST || 'smtp.libero.it',
             port: parseInt(options.port || process.env.SMTP_PORT || 587),
             secure: (options.secure || process.env.SMTP_SECURE) === 'true',
             auth: {
@@ -21,8 +21,8 @@ class EmailService {
             }
         };
         
-        this.from = options.from || process.env.EMAIL_FROM || '"Un Foggiano nel Mondo" <noreply@foggianonelmondo.it>';
-        this.adminEmail = options.adminEmail || process.env.ADMIN_EMAIL || 'admin@foggianonelmondo.it';
+        this.from = options.from || process.env.EMAIL_FROM || '"Un Foggiano nel Mondo" <ilfoggianonelmondo@libero.it>';
+        this.adminEmail = options.adminEmail || process.env.ADMIN_EMAIL || 'ilfoggianonelmondo@libero.it';
         
         // Queue per retry
         this.emailQueue = [];
@@ -176,7 +176,7 @@ class EmailService {
                     <div class="footer">
                         <p>© 2025 Un Foggiano nel Mondo - Tutti i diritti riservati</p>
                         <p>
-                            <a href="mailto:info@foggianonelmondo.it">info@foggianonelmondo.it</a> | 
+                            <a href="mailto:ilfoggianonelmondo@libero.it">ilfoggianonelmondo@libero.it</a> | 
                             Foggia, Italia
                         </p>
                     </div>
@@ -195,9 +195,9 @@ class EmailService {
         const content = `
             <h2>Grazie per la tua iscrizione! 🎉</h2>
             
-            <p>Ciao <strong>${iscrizione.nome_capitano}</strong>,</p>
+            <p>Ciao <strong>${this.escapeHtml(iscrizione.nome_capitano)}</strong>,</p>
             
-            <p>Abbiamo ricevuto la richiesta di iscrizione per la squadra <strong>"${iscrizione.nome_squadra}"</strong> al torneo "Un Foggiano nel Mondo".</p>
+            <p>Abbiamo ricevuto la richiesta di iscrizione per la squadra <strong>"${this.escapeHtml(iscrizione.nome_squadra)}"</strong> al torneo "Un Foggiano nel Mondo".</p>
             
             <div class="highlight-box">
                 <p><strong>Stato attuale:</strong> <span class="status-badge status-pending">In attesa di revisione</span></p>
@@ -209,11 +209,11 @@ class EmailService {
             <table class="info-table">
                 <tr>
                     <td>Nome Squadra</td>
-                    <td><strong>${iscrizione.nome_squadra}</strong></td>
+                    <td><strong>${this.escapeHtml(iscrizione.nome_squadra)}</strong></td>
                 </tr>
                 <tr>
                     <td>Città</td>
-                    <td>${iscrizione.citta_squadra}</td>
+                    <td>${this.escapeHtml(iscrizione.citta_squadra)}</td>
                 </tr>
                 <tr>
                     <td>Paese</td>
@@ -221,15 +221,15 @@ class EmailService {
                 </tr>
                 <tr>
                     <td>Capitano</td>
-                    <td>${iscrizione.nome_capitano} ${iscrizione.cognome_capitano}</td>
+                    <td>${this.escapeHtml(iscrizione.nome_capitano)} ${this.escapeHtml(iscrizione.cognome_capitano)}</td>
                 </tr>
                 <tr>
                     <td>Email</td>
-                    <td>${iscrizione.email_capitano}</td>
+                    <td>${this.escapeHtml(iscrizione.email_capitano)}</td>
                 </tr>
                 <tr>
                     <td>Telefono</td>
-                    <td>${iscrizione.telefono_capitano}</td>
+                    <td>${this.escapeHtml(iscrizione.telefono_capitano)}</td>
                 </tr>
                 <tr>
                     <td>Numero Giocatori</td>
@@ -250,7 +250,7 @@ class EmailService {
             ${iscrizione.note ? `
             <div class="highlight-box">
                 <strong>Note aggiuntive:</strong><br>
-                ${iscrizione.note}
+                ${this.escapeHtml(iscrizione.note)}
             </div>
             ` : ''}
             
@@ -274,8 +274,8 @@ class EmailService {
             <h2>🆕 Nuova Iscrizione Ricevuta!</h2>
             
             <div class="highlight-box">
-                <p><strong>Squadra:</strong> ${iscrizione.nome_squadra}</p>
-                <p><strong>Da:</strong> ${iscrizione.citta_squadra}, ${this.getCountryName(iscrizione.paese_squadra)}</p>
+                <p><strong>Squadra:</strong> ${this.escapeHtml(iscrizione.nome_squadra)}</p>
+                <p><strong>Da:</strong> ${this.escapeHtml(iscrizione.citta_squadra)}, ${this.getCountryName(iscrizione.paese_squadra)}</p>
             </div>
             
             <h3>Dettagli Completi</h3>
@@ -283,27 +283,27 @@ class EmailService {
             <table class="info-table">
                 <tr>
                     <td>ID Iscrizione</td>
-                    <td><code>${iscrizione.id}</code></td>
+                    <td><code>${this.escapeHtml(iscrizione.id)}</code></td>
                 </tr>
                 <tr>
                     <td>Nome Squadra</td>
-                    <td><strong>${iscrizione.nome_squadra}</strong></td>
+                    <td><strong>${this.escapeHtml(iscrizione.nome_squadra)}</strong></td>
                 </tr>
                 <tr>
                     <td>Città / Paese</td>
-                    <td>${iscrizione.citta_squadra}, ${this.getCountryName(iscrizione.paese_squadra)}</td>
+                    <td>${this.escapeHtml(iscrizione.citta_squadra)}, ${this.getCountryName(iscrizione.paese_squadra)}</td>
                 </tr>
                 <tr>
                     <td>Capitano</td>
-                    <td>${iscrizione.nome_capitano} ${iscrizione.cognome_capitano}</td>
+                    <td>${this.escapeHtml(iscrizione.nome_capitano)} ${this.escapeHtml(iscrizione.cognome_capitano)}</td>
                 </tr>
                 <tr>
                     <td>Email Capitano</td>
-                    <td><a href="mailto:${iscrizione.email_capitano}">${iscrizione.email_capitano}</a></td>
+                    <td><a href="mailto:${this.escapeHtml(iscrizione.email_capitano)}">${this.escapeHtml(iscrizione.email_capitano)}</a></td>
                 </tr>
                 <tr>
                     <td>Telefono</td>
-                    <td><a href="tel:${iscrizione.telefono_capitano}">${iscrizione.telefono_capitano}</a></td>
+                    <td><a href="tel:${this.escapeHtml(iscrizione.telefono_capitano)}">${this.escapeHtml(iscrizione.telefono_capitano)}</a></td>
                 </tr>
                 <tr>
                     <td>Data Nascita</td>
@@ -330,7 +330,7 @@ class EmailService {
             ${iscrizione.note ? `
             <div class="highlight-box">
                 <strong>📝 Note:</strong><br>
-                ${iscrizione.note}
+                ${this.escapeHtml(iscrizione.note)}
             </div>
             ` : ''}
             
@@ -355,10 +355,10 @@ class EmailService {
         const content = `
             <h2>${isApproved ? '✅ Iscrizione Approvata!' : '❌ Iscrizione Non Approvata'}</h2>
             
-            <p>Ciao <strong>${iscrizione.nome_capitano}</strong>,</p>
+            <p>Ciao <strong>${this.escapeHtml(iscrizione.nome_capitano)}</strong>,</p>
             
             ${isApproved ? `
-            <p>Siamo lieti di comunicarti che la tua iscrizione per la squadra <strong>"${iscrizione.nome_squadra}"</strong> è stata <strong>approvata</strong>!</p>
+            <p>Siamo lieti di comunicarti che la tua iscrizione per la squadra <strong>"${this.escapeHtml(iscrizione.nome_squadra)}"</strong> è stata <strong>approvata</strong>!</p>
             
             <div class="highlight-box" style="background: #d4edda; border-color: #28a745;">
                 <p><strong>🎉 Congratulazioni!</strong></p>
@@ -378,7 +378,7 @@ class EmailService {
                 <p><strong>👥 Giocatori confermati:</strong> ${iscrizione.numero_giocatori}</p>
             </div>
             ` : `
-            <p>Purtroppo dobbiamo comunicarti che la tua iscrizione per la squadra <strong>"${iscrizione.nome_squadra}"</strong> non è stata approvata.</p>
+            <p>Purtroppo dobbiamo comunicarti che la tua iscrizione per la squadra <strong>"${this.escapeHtml(iscrizione.nome_squadra)}"</strong> non è stata approvata.</p>
             
             <div class="highlight-box" style="background: #f8d7da; border-color: #dc3545;">
                 <p>Questo potrebbe essere dovuto a:</p>
@@ -394,7 +394,7 @@ class EmailService {
             
             <div class="divider"></div>
             
-            <p>Per qualsiasi domanda, contattaci a <a href="mailto:info@foggianonelmondo.it">info@foggianonelmondo.it</a></p>
+            <p>Per qualsiasi domanda, contattaci a <a href="mailto:ilfoggianonelmondo@libero.it">ilfoggianonelmondo@libero.it</a></p>
             
             <p>Cordiali saluti,<br>
             <strong>Il Team "Un Foggiano nel Mondo"</strong></p>
@@ -410,6 +410,21 @@ class EmailService {
     // UTILITY
     // ==========================================
     
+    /**
+     * Escape HTML per prevenire XSS nei template email
+     */
+    escapeHtml(text) {
+        if (!text) return '';
+        const htmlEntities = {
+            '&': '&amp;',
+            '<': '&lt;',
+            '>': '&gt;',
+            '"': '&quot;',
+            "'": '&#39;'
+        };
+        return String(text).replace(/[&<>"']/g, char => htmlEntities[char]);
+    }
+
     getCountryName(code) {
         const countries = {
             'IT': '🇮🇹 Italia',
@@ -454,13 +469,15 @@ class EmailService {
         }
     }
 
-    // Aggiunge alla queue con retry automatico
+    // Aggiunge alla queue con retry automatico (backoff esponenziale)
     async sendWithRetry(options, retries = 0) {
         const result = await this.send(options);
         
         if (!result.success && retries < this.maxRetries) {
-            console.log(`🔄 Retry email ${retries + 1}/${this.maxRetries}...`);
-            await this.delay(this.retryDelay * (retries + 1));
+            // Backoff esponenziale: 5s, 10s, 20s, 40s...
+            const delay = this.retryDelay * Math.pow(2, retries);
+            console.log(`🔄 Retry email ${retries + 1}/${this.maxRetries} tra ${delay/1000}s...`);
+            await this.delay(delay);
             return this.sendWithRetry(options, retries + 1);
         }
         

@@ -5,6 +5,7 @@ class IscrizioneForm {
         this.form = document.getElementById('iscrizioneForm');
         this.submitBtn = document.getElementById('submitBtn');
         this.recaptchaWidgetId = null;
+        this.isSubmitting = false; // Flag per prevenire doppio submit
         this.init();
     }
 
@@ -23,17 +24,11 @@ class IscrizioneForm {
             this.validateField(e.target);
         });
 
+        // Un solo listener per il submit con protezione doppio click
         this.form.addEventListener('submit', (e) => {
             e.preventDefault();
+            if (this.isSubmitting) return;
             this.handleSubmit();
-        });
-
-        let submitting = false;
-        this.form.addEventListener('submit', (e) => {
-            if (submitting) {
-                e.preventDefault();
-                return false;
-            }
         });
     }
 
@@ -84,7 +79,7 @@ class IscrizioneForm {
             dateField.addEventListener('change', () => {
                 const birthDate = new Date(dateField.value);
                 const today = new Date();
-                const age = today.getFullYear() - birthDate.getFullYear();
+                let age = today.getFullYear() - birthDate.getFullYear();
                 const monthDiff = today.getMonth() - birthDate.getMonth();
 
                 if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
@@ -93,6 +88,8 @@ class IscrizioneForm {
 
                 if (age < 55) {
                     this.showFieldError(dateField, 'L\'età minima per partecipare è 55 anni');
+                } else if (age > 100) {
+                    this.showFieldError(dateField, 'Data di nascita non valida');
                 } else {
                     this.clearFieldError(dateField);
                 }
@@ -213,6 +210,8 @@ class IscrizioneForm {
             return;
         }
 
+        // Imposta flag per prevenire doppio submit
+        this.isSubmitting = true;
         this.setSubmitButtonState(true);
 
         try {
@@ -234,16 +233,20 @@ class IscrizioneForm {
             const result = await response.json();
 
             if (response.ok) {
-                this.showMessage('Iscrizione inviata con successo', 'success');
+                this.showMessage('Iscrizione inviata con successo! Riceverai una email di conferma.', 'success');
                 this.form.reset();
                 this.loadCSRFToken();
+                // Reset contatore caratteri
+                const charCount = document.getElementById('charCount');
+                if (charCount) charCount.textContent = '0';
             } else {
-                this.showMessage(result.message ||'Si è verificato un errore durante l\'invio dell\'iscrizione', 'error');
+                this.showMessage(result.message || 'Si è verificato un errore durante l\'invio dell\'iscrizione', 'error');
             }
         } catch (error) {
             console.error('Errore nell\'invio dell\'iscrizione:', error);
-            this.showMessage('Si è verificato un errore durante l\'invio dell\'iscrizione', 'error');
+            this.showMessage('Si è verificato un errore di connessione. Riprova più tardi.', 'error');
         } finally {
+            this.isSubmitting = false;
             this.setSubmitButtonState(false);
         }
     }
